@@ -1,0 +1,93 @@
+[project]
+name = "tidely"
+version = "0.3.0"
+description = "The Ultimate Data Cleaning Engine for Python"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Tidely Maintainers", email = "maintainers@tidely.org" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "polars>=0.20.0",
+    "pyarrow>=14.0.0",
+    "pydantic>=2.5.0",
+    "rich>=13.0.0",
+    "typer>=0.9.0",
+    "pyyaml>=6.0",
+    "tzdata>=2024.1; sys_platform == 'win32'",
+]
+
+[project.scripts]
+tidely = "tidely.cli.main:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.0",
+    "mypy>=1.9.0",
+    "types-pyyaml>=6.0.12.12",
+    "pandas",
+    "pandera",
+    "pyjanitor",
+    "great-expectations",
+    "ydata-profiling; python_version < '3.14'",
+    "psutil>=7.2.2",
+    "hypothesis>=6.155.7",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tidely"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "D",   # pydocstyle
+]
+ignore = [
+    "D100", # Missing docstring in public module
+    "D104", # Missing docstring in public package
+    "E501", # Line too long
+    "B008", # Do not perform function call in argument defaults (Typer pattern)
+]
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/**/*.py" = ["D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --tb=short --cov=tidely --cov-report=term-missing"
+testpaths = ["tests"]
