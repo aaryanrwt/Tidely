@@ -1,0 +1,73 @@
+{
+    "trust_score": {
+        "overall": 87,
+        "reliability": 100,
+        "ml_readiness": 82,
+        "memory_efficiency": 51,
+        "schema_stability": 100,
+        "semantic_quality": 100
+    },
+    "semantic_types": {
+        "Id": {
+            "type": "ID/Key",
+            "match_rate": 1.0
+        },
+        "District Name": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Neighborhood Name": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Street": {
+            "type": "Text",
+            "match_rate": 1.0
+        },
+        "Weekday": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Month": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Day": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Hour": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Part of the day": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Mild injuries": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Serious injuries": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Victims": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Vehicles involved": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Longitude": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Latitude": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        }
+    },
+    "diagnoses": []
+}

@@ -172,9 +172,9 @@ def compute_trust_scores(
         if semantic["type"] != "Unknown" and semantic["type"] != "ID/Key":
             total_semantic_cols += 1
             # Match rate inside the column
-            confidence = semantic["confidence"]
+            match_rate = semantic.get("match_rate", 1.0)
             # Format violation is 1 - match_rate
-            violation_rate = 1.0 - confidence
+            violation_rate = 1.0 - match_rate
             semantic_violations += violation_rate
 
     if total_semantic_cols > 0:

@@ -1,21 +1,19 @@
 ## Description
-<!-- Describe your changes in detail -->
+Provide a brief description of the changes introduced by this pull request.
 
-## Motivation and Context
-<!-- Why is this change required? What problem does it solve? -->
-<!-- If it fixes an open issue, please link to the issue here. -->
+## Related Issues
+Link any related issues (e.g., `Fixes #123`).
 
-## How Has This Been Tested?
-<!-- Please describe in detail how you tested your changes. -->
+## Proposed Changes
+- Change 1
+- Change 2
 
-## Types of changes
-<!-- What types of changes does your code introduce? Put an `x` in all the boxes that apply: -->
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to change)
+## Checklist
+- [ ] I have read the `CONTRIBUTING.md` file.
+- [ ] My code follows the style guidelines of this project (Black/Ruff/Mypy).
+- [ ] I have added tests that prove my fix is effective or that my feature works.
+- [ ] All new and existing tests passed locally.
+- [ ] I have updated the documentation accordingly.
 
-## Checklist:
-<!-- Go over all the following points, and put an `x` in all the boxes that apply. -->
-- [ ] My code follows the code style of this project.
-- [ ] I have added tests to cover my changes.
-- [ ] All new and existing tests passed.
+## Additional Context
+Add any other context, screenshots, or performance benchmarks here.

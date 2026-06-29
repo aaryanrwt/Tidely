@@ -1,0 +1,40 @@
+{
+    "trust_score": {
+        "overall": 91,
+        "reliability": 100,
+        "ml_readiness": 95,
+        "memory_efficiency": 60,
+        "schema_stability": 100,
+        "semantic_quality": 100
+    },
+    "semantic_types": {
+        "vhigh": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "vhigh.1": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "2": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "2.1": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "small": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "low": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "unacc": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        }
+    }
+}

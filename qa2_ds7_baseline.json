@@ -1,0 +1,35 @@
+{
+    "num_rows": 525461,
+    "num_cols": 8,
+    "duplicate_rows": 6865,
+    "missing_values": {
+        "Invoice": 0,
+        "StockCode": 0,
+        "Description": 2928,
+        "Quantity": 0,
+        "InvoiceDate": 0,
+        "Price": 0,
+        "Customer ID": 107927,
+        "Country": 0
+    },
+    "dtypes": {
+        "Invoice": "str",
+        "StockCode": "str",
+        "Description": "str",
+        "Quantity": "int64",
+        "InvoiceDate": "str",
+        "Price": "float64",
+        "Customer ID": "float64",
+        "Country": "str"
+    },
+    "cardinality": {
+        "Invoice": 28816,
+        "StockCode": 4632,
+        "Description": 4682,
+        "Quantity": 825,
+        "InvoiceDate": 25296,
+        "Price": 1606,
+        "Customer ID": 4384,
+        "Country": 40
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "trust_score": {
+        "overall": 91,
+        "reliability": 100,
+        "ml_readiness": 95,
+        "memory_efficiency": 60,
+        "schema_stability": 100,
+        "semantic_quality": 100
+    },
+    "semantic_types": {
+        "sepal_length": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "sepal_width": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "petal_length": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "petal_width": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "species": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        }
+    },
+    "diagnoses": []
+}

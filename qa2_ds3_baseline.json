@@ -1,0 +1,41 @@
+{
+    "num_rows": 768,
+    "num_cols": 10,
+    "duplicate_rows": 0,
+    "missing_values": {
+        "Relative_Compactness": 0,
+        "Surface_Area": 0,
+        "Wall_Area": 0,
+        "Roof_Area": 0,
+        "Overall_Height": 0,
+        "Orientation": 0,
+        "Glazing_Area": 0,
+        "Glazing_Area_Distribution": 0,
+        "Heating_Load": 0,
+        "Cooling_Load": 0
+    },
+    "dtypes": {
+        "Relative_Compactness": "float64",
+        "Surface_Area": "float64",
+        "Wall_Area": "float64",
+        "Roof_Area": "float64",
+        "Overall_Height": "float64",
+        "Orientation": "int64",
+        "Glazing_Area": "float64",
+        "Glazing_Area_Distribution": "int64",
+        "Heating_Load": "float64",
+        "Cooling_Load": "float64"
+    },
+    "cardinality": {
+        "Relative_Compactness": 12,
+        "Surface_Area": 12,
+        "Wall_Area": 7,
+        "Roof_Area": 4,
+        "Overall_Height": 2,
+        "Orientation": 4,
+        "Glazing_Area": 4,
+        "Glazing_Area_Distribution": 6,
+        "Heating_Load": 586,
+        "Cooling_Load": 636
+    }
+}

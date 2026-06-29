@@ -1,0 +1,45 @@
+{
+    "trust_score": {
+        "overall": 89,
+        "reliability": 97,
+        "ml_readiness": 87,
+        "memory_efficiency": 60,
+        "schema_stability": 100,
+        "semantic_quality": 100
+    },
+    "semantic_types": {
+        "InvoiceNo": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "StockCode": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Description": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Quantity": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "InvoiceDate": {
+            "type": "Date",
+            "match_rate": 1.0
+        },
+        "UnitPrice": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "CustomerID": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Country": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        }
+    },
+    "diagnoses": []
+}

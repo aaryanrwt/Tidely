@@ -1,0 +1,33 @@
+{
+    "num_rows": 614,
+    "num_cols": 12,
+    "duplicate_rows": 0,
+    "missing_values": {
+        "Gender": 13,
+        "Married": 3,
+        "Dependents": 15,
+        "Education": 0,
+        "Self_Employed": 32,
+        "Applicant_Income": 0,
+        "Coapplicant_Income": 0,
+        "Loan_Amount": 0,
+        "Term": 14,
+        "Credit_History": 50,
+        "Area": 0,
+        "Status": 0
+    },
+    "cardinality": {
+        "Gender": 3,
+        "Married": 3,
+        "Dependents": 5,
+        "Education": 2,
+        "Self_Employed": 3,
+        "Applicant_Income": 505,
+        "Coapplicant_Income": 287,
+        "Loan_Amount": 204,
+        "Term": 11,
+        "Credit_History": 3,
+        "Area": 3,
+        "Status": 2
+    }
+}

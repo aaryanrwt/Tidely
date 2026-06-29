@@ -1,0 +1,161 @@
+{
+    "trust_score": {
+        "overall": 81,
+        "reliability": 95,
+        "ml_readiness": 71,
+        "memory_efficiency": 40,
+        "schema_stability": 99,
+        "semantic_quality": 100
+    },
+    "semantic_types": {
+        "Year": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Quarter": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Month": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "SKU Code": {
+            "type": "Phone",
+            "match_rate": 0.9998
+        },
+        "SKU Description": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Category": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Sub Category": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Product": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Sub Product": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Cluster Head": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Channel": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Location": {
+            "type": "Categorical",
+            "match_rate": 1.0
+        },
+        "Volume Mt": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Gross Sales": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Discount": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Trade Spend": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Total T & Disc": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Net Revenue": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Raw Material": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Packging Material": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Industrial Fixed Cost": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Industrial Variable Cost": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Total Fixed & Variable Cost": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Cogs": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Goss Profit": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Gp%": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Marketing": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "S&D": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "G&A": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Other Inc & Exp": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Ebitda": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Depriciation": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "One Off Item": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Tax": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Interest Income": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Interest Exp": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "Net Profit": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        }
+    },
+    "diagnoses": []
+}

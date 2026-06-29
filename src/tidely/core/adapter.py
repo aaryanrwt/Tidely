@@ -4,7 +4,7 @@ from typing import Any
 
 import polars as pl
 
-from tidely.core.errors import DatasetError
+from tidely.core.errors import TidelyDataError
 
 # Handle pandas import optionally to prevent failure if pandas isn't installed
 try:
@@ -30,7 +30,7 @@ def normalize_to_polars(
         Tuple: (normalized Polars DataFrame or LazyFrame, original format type string).
 
     Raises:
-        DatasetError: If the input data type is unsupported.
+        TidelyDataError: If the input data type is unsupported.
     """
     # 1. Polars LazyFrame
     if isinstance(data, pl.LazyFrame):
@@ -46,11 +46,11 @@ def normalize_to_polars(
             res_pandas = pl.from_pandas(data)
             if isinstance(res_pandas, pl.DataFrame):
                 return res_pandas, "pandas"
-            raise DatasetError(
+            raise TidelyDataError(
                 "Pandas conversion returned a Series instead of a DataFrame."
             )
         except Exception as e:
-            raise DatasetError(
+            raise TidelyDataError(
                 f"Failed to convert Pandas DataFrame to Polars: {e}"
             ) from e
 
@@ -60,14 +60,14 @@ def normalize_to_polars(
             res_arrow = pl.from_arrow(data)
             if isinstance(res_arrow, pl.DataFrame):
                 return res_arrow, "arrow"
-            raise DatasetError(
+            raise TidelyDataError(
                 "PyArrow conversion returned a Series instead of a DataFrame."
             )
         except Exception as e:
-            raise DatasetError(f"Failed to convert PyArrow Table to Polars: {e}") from e
+            raise TidelyDataError(f"Failed to convert PyArrow Table to Polars: {e}") from e
 
     # 5. Fallback/Unsupported
-    raise DatasetError(
+    raise TidelyDataError(
         f"Unsupported data type '{type(data).__name__}'. "
         f"Tidely inspect() accepts Polars, Pandas, or PyArrow DataFrames/Tables."
     )

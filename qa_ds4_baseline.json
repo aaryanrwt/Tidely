@@ -1,0 +1,23 @@
+{
+    "num_rows": 1727,
+    "num_cols": 7,
+    "duplicate_rows": 0,
+    "missing_values": {
+        "vhigh": 0,
+        "vhigh.1": 0,
+        "2": 0,
+        "2.1": 0,
+        "small": 0,
+        "low": 0,
+        "unacc": 0
+    },
+    "cardinality": {
+        "vhigh": 4,
+        "vhigh.1": 4,
+        "2": 4,
+        "2.1": 3,
+        "small": 3,
+        "low": 3,
+        "unacc": 4
+    }
+}

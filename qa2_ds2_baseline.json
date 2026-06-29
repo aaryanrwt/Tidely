@@ -1,0 +1,14 @@
+{
+    "num_rows": 19,
+    "num_cols": 1,
+    "duplicate_rows": 3,
+    "missing_values": {
+        "MILK,BREAD,BISCUIT": 0
+    },
+    "dtypes": {
+        "MILK,BREAD,BISCUIT": "str"
+    },
+    "cardinality": {
+        "MILK,BREAD,BISCUIT": 16
+    }
+}

@@ -1,0 +1,61 @@
+{
+    "trust_score": {
+        "overall": 96,
+        "reliability": 100,
+        "ml_readiness": 95,
+        "memory_efficiency": 85,
+        "schema_stability": 100,
+        "semantic_quality": 100
+    },
+    "semantic_types": {
+        "v.id": {
+            "type": "ID/Key",
+            "match_rate": 1.0
+        },
+        "on road old": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "on road now": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "years": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "km": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "rating": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "condition": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "economy": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "top speed": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "hp": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "torque": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        },
+        "current price": {
+            "type": "Numeric",
+            "match_rate": 1.0
+        }
+    },
+    "diagnoses": []
+}

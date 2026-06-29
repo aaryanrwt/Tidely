@@ -1,0 +1,23 @@
+{
+    "num_rows": 3055000,
+    "num_cols": 4,
+    "duplicate_rows": 0,
+    "missing_values": {
+        "Unnamed: 0": 0,
+        "ds": 0,
+        "y": 0,
+        "unique_id": 0
+    },
+    "dtypes": {
+        "Unnamed: 0": "int64",
+        "ds": "str",
+        "y": "float64",
+        "unique_id": "int64"
+    },
+    "cardinality": {
+        "Unnamed: 0": 3055000,
+        "ds": 13000,
+        "y": 5848,
+        "unique_id": 235
+    }
+}

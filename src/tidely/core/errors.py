@@ -15,53 +15,40 @@ class TidelyError(Exception):
             title="[bold red]❌ Tidely Diagnostic Error[/bold red]",
             border_style="red",
             title_align="left",
+            subtitle="[dim]Check the docs for more info: https://github.com/aaryanrwt/tidely[/dim]",
         )
         console.print(panel)
 
 
-class DatasetError(TidelyError):
-    """Base exception for dataset-related operations."""
-
+class TidelyDataError(TidelyError):
+    """Raised when the dataset itself is fundamentally corrupted or malformed.
+    
+    This error is highly actionable. The message will typically specify which
+    format was received and which formats are explicitly supported (e.g. Pandas, Polars).
+    """
     pass
 
 
-class DatasetLoadError(DatasetError):
-    """Raised when a dataset fails to load from a source."""
-
+class TidelySchemaError(TidelyError):
+    """Raised when the dataset fails to validate against a provided strict schema.
+    
+    Provides actionable guidance on which exact column failed validation, 
+    what the expected type was, and what the actual type is.
+    """
     pass
 
 
-class PipelineError(TidelyError):
-    """Base exception for data pipeline operations."""
-
+class TidelyBackendError(TidelyError):
+    """Raised when a specific backend (e.g. Pandas, Polars) fails an internal operation.
+    
+    Typically indicates an environment issue (e.g., PyArrow is missing but required).
+    """
     pass
 
 
-class PipelineExecutionError(PipelineError):
-    """Raised when a pipeline fails during execution."""
-
-    pass
-
-
-class PluginError(TidelyError):
-    """Base exception for plugin-related operations."""
-
-    pass
-
-
-class PluginLoadError(PluginError):
-    """Raised when a plugin fails to register or load."""
-
-    pass
-
-
-class ValidationError(TidelyError):
-    """Raised when data validation fails."""
-
-    pass
-
-
-class ConfigurationError(TidelyError):
-    """Raised when configuration validation or parsing fails."""
-
+class TidelyExecutionError(TidelyError):
+    """Raised when a vectorized operation fails during the execution pipeline.
+    
+    Often caused by extreme memory pressure or an unsupported hardware instruction.
+    """
     pass
