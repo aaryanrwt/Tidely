@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/banner.png" alt="Tidely Banner" width="100%">
+</p>
+
 # Tidely
 
 [![PyPI version](https://img.shields.io/pypi/v/tidely)](https://pypi.org/project/tidely/)
