@@ -1,13 +1,15 @@
-<div align="center">
-  <h1>🌊 Tidely</h1>
-  <p><b>The production-grade data cleaning engine for Python.</b></p>
-  <p>
-    <a href="https://pypi.org/project/tidely/"><img src="https://img.shields.io/pypi/v/tidely.svg" alt="PyPI version"></a>
-    <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.9+-blue.svg" alt="Python Supported"></a>
-    <a href="https://github.com/aaryanrwt/tidely/actions"><img src="https://img.shields.io/badge/build-passing-brightgreen.svg" alt="Build Status"></a>
-    <a href="https://github.com/aaryanrwt/tidely/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
-  </p>
-</div>
+# Tidely
+
+[![PyPI version](https://img.shields.io/pypi/v/tidely)](https://pypi.org/project/tidely/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/tidely)](https://pypi.org/project/tidely/)
+[![Downloads](https://img.shields.io/pypi/dm/tidely)](https://pypi.org/project/tidely/)
+[![License](https://img.shields.io/github/license/aaryanrwt/Tidely)](LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/aaryanrwt/Tidely?style=social)](https://github.com/aaryanrwt/Tidely)
+[![GitHub Issues](https://img.shields.io/github/issues/aaryanrwt/Tidely)](https://github.com/aaryanrwt/Tidely/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/aaryanrwt/Tidely)](https://github.com/aaryanrwt/Tidely)
+[![CI](https://github.com/aaryanrwt/Tidely/actions/workflows/ci.yml/badge.svg)](https://github.com/aaryanrwt/Tidely/actions)
+
+Zero-configuration, explainable data cleaning for Python.
 
 ---
 
