@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="assets/logo.png" width="140" alt="Tidely Logo">
+</p>
+
+<p align="center">
   <img src="assets/banner.png" alt="Tidely Banner" width="100%">
 </p>
 
