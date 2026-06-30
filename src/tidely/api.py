@@ -23,27 +23,25 @@ def clean(
 ) -> CleanResult:
     """Cleans a DataFrame deterministically using deep semantic inference.
 
-    This is the core engine of Tidely. It automatically profiles the dataset,
-    infers semantic types (Dates, Emails, Currency), optimizes memory footprints
-    by downcasting and compressing categoricals, and handles missing values safely
-    without silently dropping user data.
+    This function now accepts file paths (str or pathlib.Path) and loads them
+    using the library's adapter layer before cleaning.
 
     Args:
-        data (Any): A Pandas or Polars DataFrame.
+        data (Any): A Pandas/Polars DataFrame, a lazy frame, or a file path.
 
     Returns:
         CleanResult: A proxy object containing the cleaned DataFrame (accessible via `.df`).
             Call `.summary()` on the returned object to see an explainable report
             of every structural and memory optimization performed.
-
-    Example:
-        >>> import tidely as td
-        >>> import pandas as pd
-        >>> df = pd.read_csv("dirty_data.csv")
-        >>> result = td.clean(df)
-        >>> print(result.summary())
-        >>> clean_df = result.df
     """
+    # Auto-load file paths using the existing adapter without duplicating loader logic
+    from pathlib import Path
+    if isinstance(data, (str, Path)):
+        # Normalize to a string path for the adapter
+        data = str(data)
+        # Use the load helper to read the file into a Polars/Pandas DataFrame
+        from tidely.api import load
+        data = load(data)
     return run_pipeline(data)
 
 
@@ -123,22 +121,18 @@ def validate(data: Any, schema: dict[str, Any]) -> bool:
 def load(filepath: str, **kwargs: Any) -> Any:
     """Helper method to load a dataset into a DataFrame.
 
-    Args:
-        filepath (str): The absolute or relative path to the file.
-        **kwargs: Additional arguments passed to the underlying engine (`read_csv`).
-
-    Returns:
-        Any: A Pandas or Polars DataFrame depending on the installed backend.
-
-    Raises:
-        TidelyDataError: If the file format is unsupported.
+    Supports CSV, Parquet, Excel, ARFF, and generic fallback via the adapter.
     """
-    if filepath.endswith(".csv"):
-        if pd is not None:
-            return pd.read_csv(filepath, **kwargs)
-        elif pl is not None:
-            return pl.read_csv(filepath, **kwargs)
-    raise TidelyDataError(f"Unsupported file format for load(): {filepath}")
+    # Delegate to the adapter which knows how to handle many formats
+    from tidely.core.adapter import normalize_to_polars
+    pl_obj, fmt = normalize_to_polars(filepath)
+    # Convert Polars object to appropriate Python object (DataFrame or LazyFrame)
+    if fmt.endswith('_lazy'):
+        # Return LazyFrame for lazy formats
+        return pl_obj
+    else:
+        # Return eager DataFrame
+        return pl_obj
 
 
 def save(data: Any, filepath: str, **kwargs: Any) -> None:

@@ -38,9 +38,7 @@
   <a href="https://github.com/aaryanrwt/Tidely/issues">
     <img src="https://img.shields.io/github/issues/aaryanrwt/Tidely" alt="GitHub Issues">
   </a>
-  <a href="https://github.com/aaryanrwt/Tidely/actions/workflows/ci.yml">
-    <img src="https://github.com/aaryanrwt/Tidely/actions/workflows/ci.yml/badge.svg" alt="CI Build">
-  </a>
+
 </p>
 
 ---

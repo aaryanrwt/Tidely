@@ -364,6 +364,21 @@ class CleanResult:
         """Proxies index assignment to the underlying DataFrame."""
         self.df[key] = value
 
+    def show(self, *args: Any, **kwargs: Any) -> Any:
+        """Display the cleaned DataFrame.
+
+        Uses the underlying DataFrame's ``show`` method if available (Polars),
+        otherwise falls back to ``head`` for pandas and prints the result.
+        Returns the displayed object for chaining.
+        """
+        if hasattr(self.df, "show"):
+            return self.df.show(*args, **kwargs)
+        if hasattr(self.df, "head"):
+            result = self.df.head()
+            print(result)
+            return result
+        return self.df
+
     def __repr__(self) -> str:
         """Returns a string representation of the underlying DataFrame."""
         return repr(self.df)
