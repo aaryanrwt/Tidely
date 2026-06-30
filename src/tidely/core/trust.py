@@ -11,6 +11,7 @@ class TrustEngine:
     """
 
     def __init__(self, strictness: str = "high"):
+        """Initializes the TrustScorer with a strictness setting."""
         self.strictness = strictness
         # Mapping strictness to a confidence threshold
         self.threshold = {"conservative": 99.0, "high": 95.0, "moderate": 80.0}.get(

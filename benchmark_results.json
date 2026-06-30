@@ -1,0 +1,162 @@
+[
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\311_ServiceRequest_2020-present_DataDictionary_Updated_2025.xlsx",
+    "size_bytes": 424095,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 0.029659299998456845,
+    "peak_memory_kb": 210,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Allegations-of-Harassment-or-Bullying.xlsx",
+    "size_bytes": 19284,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 0.00013929999840911478,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Classes-in-Mathematics-and-Science.xlsx",
+    "size_bytes": 23989,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 7.609999738633633e-05,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\credits.csv",
+    "size_bytes": 3816592,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 6.589999975403771e-05,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Crunchy Corner Actual - Unclean Data.xlsx",
+    "size_bytes": 158792300,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 6.290000237640925e-05,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Crunchy Corner Budget-Unclean Data.xlsx",
+    "size_bytes": 10522925,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 6.070000017643906e-05,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\customers-2000000.csv",
+    "size_bytes": 349423206,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 6.290000237640925e-05,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\dataset_31_credit-g.arff",
+    "size_bytes": 162291,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 0.00020020000010845251,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\dataset_37_diabetes.arff",
+    "size_bytes": 37419,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 9.610000051907264e-05,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\dataset_61_iris.arff",
+    "size_bytes": 7487,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 7.510000068577938e-05,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Enrollment-in-Advanced-Mathematics.xlsx",
+    "size_bytes": 46887,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 8.539999907952733e-05,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Parking_Meters_-_Citywide_Rate_Zones_20260630.csv",
+    "size_bytes": 2524601,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 0.00012159999823779799,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\research-questions-ai-10000.csv",
+    "size_bytes": 1337226,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 0.00014840000221738592,
+    "peak_memory_kb": 3,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\titles.csv",
+    "size_bytes": 2028486,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 0.0001326000019616913,
+    "peak_memory_kb": 2,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Uncleaned-data.txt",
+    "size_bytes": 60824000,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 0.00011789999916800298,
+    "peak_memory_kb": 2,
+    "row_count_before": null,
+    "row_count_after": null
+  },
+  {
+    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\y_amazon-google-large.csv",
+    "size_bytes": 115412276,
+    "exception": null,
+    "warnings": [],
+    "execution_time_sec": 0.00012769999739248306,
+    "peak_memory_kb": 2,
+    "row_count_before": null,
+    "row_count_after": null
+  }
+]

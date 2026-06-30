@@ -7,6 +7,7 @@ class OutcomeTracker:
     """Measures delta (e.g. memory bytes saved) between original and cleaned dataframe."""
 
     def __init__(self, original_df: Any):
+        """Initializes the OutcomeTracker with the original DataFrame reference."""
         self.original_df = original_df
         self.memory_before_bytes = self._calculate_memory(original_df)
         self.initial_health = 60  # Mock logic, real logic in Phase 5
@@ -16,10 +17,10 @@ class OutcomeTracker:
         if hasattr(df, "memory_usage"):
             mem = df.memory_usage(deep=True)
             if hasattr(mem, "sum"):
-                return mem.sum()
+                return float(mem.sum())
         elif hasattr(df, "estimated_size"):
             # Polars
-            return df.estimated_size()
+            return float(df.estimated_size())
         return 0.0
 
     def track(
@@ -40,10 +41,10 @@ class OutcomeTracker:
         """
         memory_after_bytes = self._calculate_memory(cleaned_df)
 
-        from collections import Counter
+        # from collections import Counter  # unused import removed
 
-        fix_counts = Counter([a.get("category", "Fix") for a in autofixes])
-        warn_counts = Counter([w.get("category", "Warning") for w in warnings])
+        # fix_counts = Counter([a.get("category", "Fix") for a in autofixes])
+        # warn_counts = Counter([w.get("category", "Warning") for w in warnings])
 
         formatted_fixes = []
         for action in autofixes:

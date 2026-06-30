@@ -11,6 +11,7 @@ class CleaningPlanner:
     """
 
     def __init__(self, threshold: float):
+        """Initializes the PlanningEngine with a confidence threshold."""
         self.threshold = threshold
 
     def plan(

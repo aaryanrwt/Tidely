@@ -11,6 +11,7 @@ class SemanticEngine:
     """
 
     def __init__(self):
+        """Initializes the SemanticEngine and compiles regex patterns."""
         # Compile regexes once to optimize startup and search speed
         self.patterns = {
             "Email": re.compile(r"^[\w\.-]+\s*@\s*[\w\.-]+\.\w+$"),

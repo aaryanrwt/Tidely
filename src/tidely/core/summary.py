@@ -18,6 +18,7 @@ class CleanSummary:
         memory_before_mb: float,
         memory_after_mb: float,
     ):
+        """Initializes the cleaning summary representation."""
         self.initial_health = initial_health
         self.final_health = final_health
         self.fixes = fixes
@@ -26,6 +27,7 @@ class CleanSummary:
         self.memory_after_mb = memory_after_mb
 
     def __str__(self) -> str:
+        """Generates a beautiful human-readable summary block string."""
         lines = [
             "=" * 50,
             "Tidely Cleaning Summary",
@@ -75,4 +77,5 @@ class CleanSummary:
         return "\n".join(lines)
 
     def __repr__(self) -> str:
+        """Returns the summary representation string."""
         return self.__str__()

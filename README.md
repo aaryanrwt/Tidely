@@ -29,6 +29,9 @@
   <a href="https://pepy.tech/project/tidely">
     <img src="https://img.shields.io/pypi/dm/tidely?color=orange" alt="Downloads">
   </a>
+  <a href="https://pepy.tech/projects/tidely">
+    <img src="https://static.pepy.tech/personalized-badge/tidely?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads" alt="PyPI Downloads">
+  </a>
   <a href="https://github.com/aaryanrwt/Tidely/stargazers">
     <img src="https://img.shields.io/github/stars/aaryanrwt/Tidely" alt="GitHub Stars">
   </a>

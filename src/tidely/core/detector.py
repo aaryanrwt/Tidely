@@ -7,6 +7,7 @@ class DetectionEngine:
     """Scans a DataFrame to collect structural metadata without inferring business logic."""
 
     def __init__(self, max_sample_size: int = 10000):
+        """Initializes the DetectionEngine with a maximum sample size."""
         self.max_sample_size = max_sample_size
 
     def analyze(self, df: Any) -> dict[str, Any]:

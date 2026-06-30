@@ -1,6 +1,6 @@
 """The Result object returned by td.clean()."""
 
-from typing import Any
+from typing import Any, cast, Optional
 
 
 class CleanResult:
@@ -15,8 +15,20 @@ class CleanResult:
         cleaned_df: Any,
         original_df: Any,
         summary_text: str,
-        report_data: dict,
-    ):
+        report_data: dict[str, Any],
+    ) -> None:
+        """Initializes the Result object.
+
+        Args:
+            cleaned_df: The production-ready DataFrame.
+            original_df: A copy of the original DataFrame before cleaning.
+            summary_text: The beautiful terminal output string.
+            report_data: Programmatic dictionary of what changed.
+        """
+        self.df = cleaned_df
+        self._original_df = original_df
+        self._summary_text = summary_text
+        self.report = report_data
         """Initializes the Result object.
 
         Args:
@@ -59,18 +71,22 @@ class CleanResult:
 
     # Proxy all other attributes to the underlying DataFrame
     def __getattr__(self, name: str) -> Any:
+        """Proxies attribute access to the underlying DataFrame."""
         return getattr(self.df, name)
 
     def __getitem__(self, key: Any) -> Any:
+        """Proxies indexing to the underlying DataFrame."""
         return self.df[key]
 
     def __setitem__(self, key: Any, value: Any) -> None:
+        """Proxies index assignment to the underlying DataFrame."""
         self.df[key] = value
 
     def __repr__(self) -> str:
+        """Returns a string representation of the underlying DataFrame."""
         return repr(self.df)
 
-    def _repr_html_(self) -> str | None:
+    def _repr_html_(self) -> Optional[str]:
         if hasattr(self.df, "_repr_html_"):
-            return self.df._repr_html_()
+            return cast(Optional[str], self.df._repr_html_())
         return None

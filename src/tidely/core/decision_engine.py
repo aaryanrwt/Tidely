@@ -18,6 +18,7 @@ class DecisionEngine:
     """
 
     def __init__(self):
+        """Initializes the DecisionEngine and profiles system resources."""
         # Hardware profiling
         self.cpu_cores = os.cpu_count() or 4
         self.total_ram_bytes = self._get_total_ram()

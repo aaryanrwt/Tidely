@@ -1,3 +1,5 @@
+"""Dataset profile representation and visualization classes."""
+
 import sys
 from typing import Any
 

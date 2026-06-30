@@ -11,6 +11,7 @@ class CleaningExecutor:
     """
 
     def __init__(self):
+        """Initializes the ExecutionEngine."""
         pass
 
     def execute(self, df: Any, autofixes: list[dict[str, Any]]) -> Any:

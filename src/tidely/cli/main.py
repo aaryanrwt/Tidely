@@ -51,7 +51,7 @@ def clean(
             )
     except Exception as e:
         console.print(f"[bold red]Execution failed:[/bold red] {e}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from e
 
 
 @app.command()
@@ -74,7 +74,7 @@ def inspect(
         profile.show()
     except Exception as e:
         console.print(f"[bold red]Inspection failed:[/bold red] {e}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from e
 
 
 @app.command()
@@ -103,7 +103,7 @@ def report(
         )
     except Exception as e:
         console.print(f"[bold red]Report generation failed:[/bold red] {e}")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from e
 
 
 if __name__ == "__main__":

@@ -148,7 +148,7 @@ def parse_arff(filepath: str) -> "pd.DataFrame":
 
     import pandas as pd
 
-    relation = None
+    # relation variable removed as unused
     attributes = []
     data_started = False
     data_lines = []
@@ -167,7 +167,7 @@ def parse_arff(filepath: str) -> "pd.DataFrame":
 
             if not data_started:
                 if line_str.lower().startswith("@relation"):
-                    relation = line_str.split(None, 1)[1].strip()
+                    _relation = line_str.split(None, 1)[1].strip()
                     continue
                 m = attr_re.match(line_str)
                 if m:
