@@ -1,16 +1,16 @@
 """The Orchestrator for the Tidely Data Cleaning Pipeline."""
 
 from typing import Any
+
 import polars as pl
 
-from tidely.result import CleanResult
 from tidely.core.adapter import normalize_to_polars
-from tidely.core.errors import TidelyDataError
+from tidely.result import CleanResult
 
 
 def run_pipeline(data: Any) -> CleanResult:
     """Runs the full intelligence layer pipeline and returns the CleanResult.
-    
+
     Pipeline Steps:
     1. Normalize input (Pandas/Polars/Arrow/Filepath) to Polars representation
     2. Profile dataset domain DNA and detect structure
@@ -20,23 +20,24 @@ def run_pipeline(data: Any) -> CleanResult:
     6. Execute the plan natively using compiled Polars expressions
     7. Profile the cleaned dataset to compute the final Lighthouse trust score
     8. Generate the CleanResult with an explainable report
-    
+
     Args:
         data: The raw input DataFrame or filepath.
-        
+
     Returns:
         CleanResult: The outcome object containing the cleaned DataFrame.
     """
-    from tidely.core.detector import DetectionEngine
-    from tidely.core.semantic import SemanticEngine
-    from tidely.core.scorer import compute_trust_scores
-    from tidely.core.dna import infer_dataset_dna
-    from tidely.core.plan import plan
-    from tidely.core.tracker import OutcomeTracker
-    from tidely.core.summary import CleanSummary
-
     # 1. Deduplicate column names if pandas to prevent downstream crashes
     import pandas as pd
+
+    from tidely.core.detector import DetectionEngine
+    from tidely.core.dna import infer_dataset_dna
+    from tidely.core.plan import plan
+    from tidely.core.scorer import compute_trust_scores
+    from tidely.core.semantic import SemanticEngine
+    from tidely.core.summary import CleanSummary
+    from tidely.core.tracker import OutcomeTracker
+
     if isinstance(data, pd.DataFrame) and data.columns.has_duplicates:
         data = data.copy()
         new_cols = []
@@ -96,27 +97,34 @@ def run_pipeline(data: Any) -> CleanResult:
     # Map RepairActions to the dict format expected by the tracker
     autofixes = []
     warnings = []
-    
+
     # We retrieve the actions from the plan
     for action in p.actions:
         # Since all actions in RepairPlan are applied in p.execute(), they are fixes
-        autofixes.append({
-            "category": action.category,
-            "column": getattr(action, "column", ""),
-            "why": action.why_it_changed,
-            "impact": action.what_changed,
-            "confidence": int(action.confidence * 100)
-        })
+        autofixes.append(
+            {
+                "category": action.category,
+                "column": getattr(action, "column", ""),
+                "why": action.why_it_changed,
+                "impact": action.what_changed,
+                "confidence": int(action.confidence * 100),
+            }
+        )
 
     # Generate warnings for anything left uncleaned (e.g. Unknown/low confidence semantic columns)
     for col, info in semantics_final.items():
-        if info["type"] == "Unknown" and metadata_final["columns"][col]["null_count"] > 0:
-            warnings.append({
-                "category": "Missing Values",
-                "column": col,
-                "confidence": int(info["confidence"] * 100),
-                "why": f"Column '{col}' contains un-imputed missing values with unknown semantic type."
-            })
+        if (
+            info["type"] == "Unknown"
+            and metadata_final["columns"][col]["null_count"] > 0
+        ):
+            warnings.append(
+                {
+                    "category": "Missing Values",
+                    "column": col,
+                    "confidence": int(info["confidence"] * 100),
+                    "why": f"Column '{col}' contains un-imputed missing values with unknown semantic type.",
+                }
+            )
 
     outcome = tracker.track(df_cleaned, autofixes, warnings)
     outcome["final_health"] = trust_final.overall
@@ -142,5 +150,5 @@ def run_pipeline(data: Any) -> CleanResult:
         cleaned_df=cleaned_df_out,
         original_df=original_data,
         summary_text=str(summary),
-        report_data=outcome
+        report_data=outcome,
     )

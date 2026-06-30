@@ -1,5 +1,4 @@
 import json
-import os
 
 for i in range(1, 7):
     report_file = f"C:\\Users\\Aaryan Rawat\\.gemini\\antigravity\\brain\\84be442f-3418-4bbc-830d-3a5c2fbe0dc2\\qa3_report_ds{i}.md"
@@ -10,20 +9,20 @@ for i in range(1, 7):
             insp = json.load(f)
         with open(f"qa3_ds{i}_cleaning.json") as f:
             clean = json.load(f)
-            
+
         content = f"""# QA Report Dataset {i}
         
 ## 1. Manual Inspection Baseline
-- Rows: {base['num_rows']}
-- Columns: {base['num_cols']}
-- Duplicates: {base['duplicate_rows']}
+- Rows: {base["num_rows"]}
+- Columns: {base["num_cols"]}
+- Duplicates: {base["duplicate_rows"]}
 
 ## 2. Inspection Accuracy
-- Trust Score: {insp['trust_score']}
+- Trust Score: {insp["trust_score"]}
 
 ## 3. Cleaning Accuracy
 ```text
-{clean['summary']}
+{clean["summary"]}
 ```
 """
         with open(report_file, "w", encoding="utf-8") as f:

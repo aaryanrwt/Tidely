@@ -1,4 +1,5 @@
 import pandas as pd
+
 import tidely as td
 
 df = pd.read_csv("qa_ds2_temp.csv")

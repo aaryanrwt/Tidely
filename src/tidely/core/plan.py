@@ -1,30 +1,31 @@
 """Planning engine that inspects datasets and generates explainable cleaning plans."""
 
 from typing import Any
+
 import polars as pl
 
 from tidely.core.clean_engine import RepairAction, RepairPlan
-from tidely.core.profile import DatasetProfile
 from tidely.core.decision_engine import DecisionEngine
+from tidely.core.profile import DatasetProfile
 from tidely.core.rules import (
     make_categorical_rule,
+    make_coordinate_clip_rule,
     make_date_rule,
     make_dedup_id_rule,
     make_dedup_rows_rule,
     make_downcast_rule,
     make_email_rule,
     make_impute_constant_rule,
-    make_impute_median_rule,
-    make_impute_mean_rule,
-    make_impute_mode_rule,
     make_impute_ffill_rule,
-    make_phone_rule,
+    make_impute_mean_rule,
+    make_impute_median_rule,
+    make_impute_mode_rule,
     make_outlier_iqr_rule,
     make_outlier_zscore_rule,
+    make_phone_rule,
+    make_replace_null_placeholders_rule,
     make_unicode_clean_rule,
     make_zip_code_rule,
-    make_coordinate_clip_rule,
-    make_replace_null_placeholders_rule,
 )
 
 
@@ -44,7 +45,7 @@ def plan(data: Any) -> RepairPlan:
 
     actions: list[RepairAction] = []
     points_recovered = 0.0
-    
+
     decision_engine = DecisionEngine()
 
     # Deduplication will run at the end of the pipeline to catch post-normalization/imputation duplicates
@@ -58,7 +59,10 @@ def plan(data: Any) -> RepairPlan:
 
         # ID Deduplication
         if stype == "ID/Key" and conf >= 0.9:
-            if any(kw in col.lower() for kw in ("name", "desc", "title", "text", "seq", "val")):
+            if any(
+                kw in col.lower()
+                for kw in ("name", "desc", "title", "text", "seq", "val")
+            ):
                 continue
             try:
                 id_dups = df.height - df.n_unique(subset=[col])
@@ -178,10 +182,16 @@ def plan(data: Any) -> RepairPlan:
         if dtype == pl.String:
             try:
                 placeholders = ["?", "N/A", "n/a", "null", "NULL", "NaN", "nan"]
-                placeholder_count = df.select(pl.col(col).cast(pl.String).str.strip_chars().is_in(placeholders).sum()).item()
+                placeholder_count = df.select(
+                    pl.col(col)
+                    .cast(pl.String)
+                    .str.strip_chars()
+                    .is_in(placeholders)
+                    .sum()
+                ).item()
             except Exception:
                 placeholder_count = 0
-                
+
         if placeholder_count > 0:
             actions.append(
                 RepairAction(
@@ -203,9 +213,9 @@ def plan(data: Any) -> RepairPlan:
                 dtype_str=str(dtype),
                 null_count=null_count,
                 total_count=df.height,
-                unique_count=df[col].n_unique()
+                unique_count=df[col].n_unique(),
             )
-            
+
             if strategy == "impute_median":
                 actions.append(
                     RepairAction(
@@ -276,13 +286,11 @@ def plan(data: Any) -> RepairPlan:
                 is_skewed = skew is not None and abs(skew) > 1.0
             except Exception:
                 is_skewed = False
-                
+
             outlier_strat, outlier_params = decision_engine.select_outlier_strategy(
-                column_name=col,
-                row_count=df.height,
-                is_normal_dist=not is_skewed
+                column_name=col, row_count=df.height, is_normal_dist=not is_skewed
             )
-            
+
             if outlier_strat == "iqr":
                 actions.append(
                     RepairAction(
@@ -291,7 +299,9 @@ def plan(data: Any) -> RepairPlan:
                         why_it_changed="IQR-based clipping prevents extreme anomalies from skewing downstream training.",
                         confidence=0.9,
                         expected_score_bump=5,
-                        rule_fn=make_outlier_iqr_rule(col, outlier_params.get("threshold", 1.5)),
+                        rule_fn=make_outlier_iqr_rule(
+                            col, outlier_params.get("threshold", 1.5)
+                        ),
                     )
                 )
                 points_recovered += 5.0
@@ -303,7 +313,9 @@ def plan(data: Any) -> RepairPlan:
                         why_it_changed="Z-score clipping removes values beyond normal distribution threshold (3.0 std devs).",
                         confidence=0.9,
                         expected_score_bump=5,
-                        rule_fn=make_outlier_zscore_rule(col, outlier_params.get("threshold", 3.0)),
+                        rule_fn=make_outlier_zscore_rule(
+                            col, outlier_params.get("threshold", 3.0)
+                        ),
                     )
                 )
                 points_recovered += 5.0

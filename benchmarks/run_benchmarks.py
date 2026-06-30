@@ -191,6 +191,7 @@ if __name__ == "__main__":
     print(f"{'Tool':<20} | {'Time (s)':<10} | {'Memory (MB)':<10}")
     print("-" * 50)
     print(f"{'Tidely':<20} | {tidely_time:<10.2f} | {tidely_mem:<10.2f}")
+
     def format_row(name: str, t: float | None, m: float | None) -> None:
         t_str = f"{t:<10.2f}" if t is not None else f"{'N/A':<10}"
         m_str = f"{m:<10.2f}" if m is not None else f"{'N/A':<10}"

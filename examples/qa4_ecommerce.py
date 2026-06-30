@@ -1,14 +1,16 @@
-import pandas as pd
 import json
 import time
-import os
+
+import pandas as pd
+
 import tidely as td
+
 
 def process_dataset():
     csv_path = r"C:\Users\Aaryan Rawat\Downloads\amazon+product+and+google+locations+reviews\y_amazon-google-large.csv"
-    print(f"\n======================================")
+    print("\n======================================")
     print(f"Loading CSV: {csv_path}")
-    
+
     try:
         df = pd.read_csv(csv_path, low_memory=False)
     except Exception as e:
@@ -16,7 +18,7 @@ def process_dataset():
         return
 
     print(f"Loaded DataFrame with shape: {df.shape}")
-    
+
     # PHASE 1: Baseline
     cardinality = {str(col): int(df[col].nunique(dropna=False)) for col in df.columns}
     report_p1 = {
@@ -25,30 +27,30 @@ def process_dataset():
         "duplicate_rows": int(df.duplicated().sum()),
         "missing_values": df.isna().sum().to_dict(),
         "dtypes": {str(col): str(dt) for col, dt in df.dtypes.items()},
-        "cardinality": cardinality
+        "cardinality": cardinality,
     }
     with open("qa4_ecommerce_baseline.json", "w") as f:
         json.dump(report_p1, f, indent=4)
-        
+
     # PHASE 2: Tidely Inspection
     profile = td.inspect(df)
     report_p2 = {
         "trust_score": profile.trust_score.__dict__,
         "semantic_types": profile.semantic_types,
-        "diagnoses": [str(d) for d in profile.diagnoses]
+        "diagnoses": [str(d) for d in profile.diagnoses],
     }
     with open("qa4_ecommerce_inspection.json", "w") as f:
         json.dump(report_p2, f, indent=4)
-        
+
     # PHASE 3: Tidely Cleaning
     df_clean = df.copy()
     start_td = time.time()
     result = td.clean(df_clean)
     time_td = time.time() - start_td
-    
+
     with open("qa4_ecommerce_cleaning.json", "w", encoding="utf-8") as f:
         json.dump({"summary": result.summary()}, f, indent=4)
-        
+
     # PHASE 6: Benchmark
     start_pd = time.time()
     df_pd = df.copy().drop_duplicates()
@@ -57,11 +59,12 @@ def process_dataset():
             if df_pd[col].nunique() < len(df_pd) * 0.05:
                 df_pd[col] = df_pd[col].astype("category")
     time_pd = time.time() - start_pd
-    
+
     print(f"Pandas Time: {time_pd:.4f}s")
     print(f"Tidely Time: {time_td:.4f}s")
     print(f"Ratio:       {time_td / max(time_pd, 0.0001):.2f}x")
-    print(f"Completed QA4 E-Commerce Phases 1, 2, 3, 6.")
+    print("Completed QA4 E-Commerce Phases 1, 2, 3, 6.")
+
 
 if __name__ == "__main__":
     process_dataset()

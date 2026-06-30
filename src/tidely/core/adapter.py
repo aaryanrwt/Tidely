@@ -35,6 +35,7 @@ def normalize_to_polars(
     # 0. Filepath String
     if isinstance(data, str):
         import os
+
         if not os.path.exists(data):
             raise TidelyDataError(f"File not found: {data}")
         ext = os.path.splitext(data)[1].lower()
@@ -73,7 +74,9 @@ def normalize_to_polars(
                     return pl.from_pandas(pd.read_csv(data)), "pandas"
                 raise TidelyDataError(f"Unsupported file extension: {ext}")
         except Exception as e:
-            raise TidelyDataError(f"Failed to load dataset from path '{data}': {e}") from e
+            raise TidelyDataError(
+                f"Failed to load dataset from path '{data}': {e}"
+            ) from e
 
     # 1. Polars LazyFrame
     if isinstance(data, pl.LazyFrame):
@@ -127,7 +130,9 @@ def normalize_to_polars(
                 "PyArrow conversion returned a Series instead of a DataFrame."
             )
         except Exception as e:
-            raise TidelyDataError(f"Failed to convert PyArrow Table to Polars: {e}") from e
+            raise TidelyDataError(
+                f"Failed to convert PyArrow Table to Polars: {e}"
+            ) from e
 
     # 5. Fallback/Unsupported
     raise TidelyDataError(
@@ -138,8 +143,9 @@ def normalize_to_polars(
 
 def parse_arff(filepath: str) -> "pd.DataFrame":
     """Parses an Attribute-Relation File Format (ARFF) file into a Pandas DataFrame."""
-    import re
     import csv
+    import re
+
     import pandas as pd
 
     relation = None
@@ -149,9 +155,11 @@ def parse_arff(filepath: str) -> "pd.DataFrame":
 
     # Regex to parse attribute line: @attribute <name> <type>
     # Name can be quoted or unquoted
-    attr_re = re.compile(r"^\s*@attribute\s+('[^']+'|\"[^\"]+\"|\S+)\s+(.+)$", re.IGNORECASE)
+    attr_re = re.compile(
+        r"^\s*@attribute\s+('[^']+'|\"[^\"]+\"|\S+)\s+(.+)$", re.IGNORECASE
+    )
 
-    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+    with open(filepath, encoding="utf-8", errors="ignore") as f:
         for line in f:
             line_str = line.strip()
             if not line_str or line_str.startswith("%"):
@@ -178,7 +186,7 @@ def parse_arff(filepath: str) -> "pd.DataFrame":
 
     columns = [attr[0] for attr in attributes]
     rows = []
-    
+
     # Parse data lines
     for line in data_lines:
         try:
@@ -190,7 +198,7 @@ def parse_arff(filepath: str) -> "pd.DataFrame":
             if len(parts) < len(columns):
                 parts.extend([None] * (len(columns) - len(parts)))
             elif len(parts) > len(columns):
-                parts = parts[:len(columns)]
+                parts = parts[: len(columns)]
             rows.append(parts)
         except Exception:
             pass

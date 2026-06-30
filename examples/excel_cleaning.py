@@ -1,10 +1,11 @@
-"""
-Tidely Example 2: Excel Cleaning
+"""Tidely Example 2: Excel Cleaning
 This script demonstrates reading from an Excel file (requires openpyxl).
 """
 
 import pandas as pd
+
 import tidely as td
+
 
 def main():
     # Load an Excel file using Pandas
@@ -16,7 +17,7 @@ def main():
         return
 
     print("Cleaning Enterprise Excel Export...")
-    
+
     # Tidely handles Excel DataFrames seamlessly
     result = td.clean(df)
 
@@ -27,6 +28,7 @@ def main():
     # Export back to Excel
     result.df.to_excel("financial_report_cleaned.xlsx", index=False)
     print("Saved clean data to financial_report_cleaned.xlsx")
+
 
 if __name__ == "__main__":
     main()

@@ -1,17 +1,24 @@
-"""
-Tidely Example 1: Basic CSV Cleaning
+"""Tidely Example 1: Basic CSV Cleaning
 This script demonstrates the simplest way to clean a Pandas DataFrame.
 """
 
 import pandas as pd
+
 import tidely as td
 
 # 1. Load your dirty dataset using Pandas
-df = pd.DataFrame({
-    "id": [1, 2, 2, 3], # Includes a duplicate row
-    "email": ["test@test.com", "admin@domain.org", "admin@domain.org", "invalid_email"],
-    "age": [25, 30, 30, None],
-})
+df = pd.DataFrame(
+    {
+        "id": [1, 2, 2, 3],  # Includes a duplicate row
+        "email": [
+            "test@test.com",
+            "admin@domain.org",
+            "admin@domain.org",
+            "invalid_email",
+        ],
+        "age": [25, 30, 30, None],
+    }
+)
 
 print("Before Tidely:")
 print(df)

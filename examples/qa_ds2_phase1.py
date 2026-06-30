@@ -1,7 +1,9 @@
-from kagglehub import KaggleDatasetAdapter
+import json
+
 import kagglehub
 import pandas as pd
-import json
+from kagglehub import KaggleDatasetAdapter
+
 
 def manual_inspection():
     print("Downloading Dataset 2: Ford & Mercedes Used Cars...")
@@ -10,40 +12,48 @@ def manual_inspection():
         df = kagglehub.load_dataset(
             KaggleDatasetAdapter.PANDAS,
             "adityadesai13/used-car-dataset-ford-and-mercedes",
-            "merc.csv"
+            "merc.csv",
         )
     except Exception as e:
         print("Failed to load specific csv, loading first available via adapter.", e)
         # Fallback to standard download if adapter fails
-        path = kagglehub.dataset_download("adityadesai13/used-car-dataset-ford-and-mercedes")
-        import glob, os
+        path = kagglehub.dataset_download(
+            "adityadesai13/used-car-dataset-ford-and-mercedes"
+        )
+        import glob
+        import os
+
         csv_files = glob.glob(os.path.join(path, "*.csv"))
         df = pd.read_csv(csv_files[0])
 
     print(f"Loaded DataFrame with shape: {df.shape}")
-    
+
     # 1. Basic properties
     num_rows = len(df)
     num_cols = len(df.columns)
     mem_size = df.memory_usage(deep=True).sum()
-    
+
     # 2. Duplicates
     dup_rows = int(df.duplicated().sum())
-    
+
     # 3. Missing values
     missing_vals = df.isna().sum().to_dict()
-    
+
     # 4. Data types
     dtypes = {col: str(dt) for col, dt in df.dtypes.items()}
-    
+
     # 5. Cardinality
     cardinality = {col: int(df[col].nunique(dropna=False)) for col in df.columns}
-    
+
     # Classify categoricals
-    high_cardinality = [col for col, count in cardinality.items() if count > 1000 and count < num_rows]
-    low_cardinality = [col for col, count in cardinality.items() if count <= 100 and count > 2]
+    high_cardinality = [
+        col for col, count in cardinality.items() if count > 1000 and count < num_rows
+    ]
+    low_cardinality = [
+        col for col, count in cardinality.items() if count <= 100 and count > 2
+    ]
     binary_cols = [col for col, count in cardinality.items() if count == 2]
-    
+
     report = {
         "num_rows": num_rows,
         "num_cols": num_cols,
@@ -54,14 +64,15 @@ def manual_inspection():
         "cardinality": cardinality,
         "binary_cols": binary_cols,
         "low_card_cols": low_cardinality,
-        "high_card_cols": high_cardinality
+        "high_card_cols": high_cardinality,
     }
-    
+
     with open("qa_ds2_baseline.json", "w") as f:
         json.dump(report, f, indent=4)
-        
+
     print("Saved manual baseline report to qa_ds2_baseline.json")
-    df.to_csv("qa_ds2_temp.csv", index=False) # Save temporarily for Phase 2/3
+    df.to_csv("qa_ds2_temp.csv", index=False)  # Save temporarily for Phase 2/3
+
 
 if __name__ == "__main__":
     manual_inspection()
