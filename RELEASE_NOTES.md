@@ -18,7 +18,7 @@ Tidely v1.3.0 Beta introduces extensive reliability, performance, and format com
 
 ## 📦 Installation
 ```bash
-pip install tidely==1.3.0b1
+pip install tidely==1.3.0b2
 ```
 
 ## 📖 Known Limitations & Next Steps

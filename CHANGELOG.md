@@ -4,7 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.0-beta] - 2026-06-30
+## [1.3.0b2] - 2026-06-30
+
+- Decision Engine introduced
+- Mixed dataset validation
+- Improved semantic detection
+- Better README
+- Faster cleaning pipeline
+- Bug fixes
+- Improved memory optimization
 
 ### Added
 - Native Attribute-Relation File Format (ARFF) parsing engine with nominal and type casting.

@@ -142,7 +142,7 @@ Tidely has been validated on
 
 Version
 
-**v1.3.0-beta**
+**v1.3.0b2**
 
 | Dataset | Rows | Health Before | Health After |
 |-----------|---------|----------------|---------------|
