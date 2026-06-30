@@ -1,69 +1,88 @@
-"""CLI Interface for Tidely."""
+"""Command-line interface for Tidely using Typer and Rich."""
 
-import argparse
-import sys
+import os
+from typing import Optional
+import typer
+from rich.console import Console
+
 import tidely as td
 
-def main():
-    parser = argparse.ArgumentParser(description="Tidely: The Intelligence Layer for Tabular Data")
-    subparsers = parser.add_subparsers(dest="command", help="Available commands")
+app = typer.Typer(
+    name="tidely",
+    help="Tidely: The Intelligent Data Cleaning Engine.",
+    no_args_is_help=True
+)
+
+console = Console()
+
+
+@app.command()
+def clean(
+    input_file: str = typer.Argument(..., help="Path to the raw CSV, Parquet, or JSON file"),
+    output: Optional[str] = typer.Option("cleaned_data.csv", "--out", "-o", help="Output file path"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Simulate cleaning without saving")
+):
+    """Cleans a dataset automatically and outputs a beautiful consult-grade summary."""
+    if not os.path.exists(input_file):
+        console.print(f"[bold red]Error:[/bold red] File not found: {input_file}")
+        raise typer.Exit(code=1)
+
+    console.print(f"[bold cyan]Tidely v{td.__version__}[/bold cyan] [dim]is processing '{input_file}'...[/dim]\n")
     
-    # Clean Command
-    clean_parser = subparsers.add_parser("clean", help="Clean a dataset automatically")
-    clean_parser.add_argument("input_file", help="Path to the raw CSV file")
-    clean_parser.add_argument("--out", "-o", default="cleaned_data.csv", help="Output file path")
+    try:
+        # Load and clean automatically using Tidely unified engine
+        result = td.clean(input_file)
+        
+        # summary is already printed inside plan.show() which clean() triggers,
+        # but let's make sure the CleanResult summary is accessible
+        
+        if not dry_run:
+            td.save(result.df, output)
+            console.print(f"\n[bold green]Success![/bold green] Cleaned dataset saved to [underline]{output}[/underline]")
+    except Exception as e:
+        console.print(f"[bold red]Execution failed:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def inspect(
+    input_file: str = typer.Argument(..., help="Path to the raw CSV, Parquet, or JSON file")
+):
+    """Profiles a dataset and generates a comprehensive Trust Score and semantic diagnosis."""
+    if not os.path.exists(input_file):
+        console.print(f"[bold red]Error:[/bold red] File not found: {input_file}")
+        raise typer.Exit(code=1)
+
+    console.print(f"[bold cyan]Tidely v{td.__version__}[/bold cyan] [dim]is profiling '{input_file}'...[/dim]\n")
     
-    # Inspect Command
-    inspect_parser = subparsers.add_parser("inspect", help="Inspect a dataset and generate a profile")
-    inspect_parser.add_argument("input_file", help="Path to the raw CSV file")
+    try:
+        profile = td.inspect(input_file)
+        profile.show()
+    except Exception as e:
+        console.print(f"[bold red]Inspection failed:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def report(
+    input_file: str = typer.Argument(..., help="Path to the raw CSV, Parquet, or JSON file"),
+    output: Optional[str] = typer.Option("tidely_report.html", "--out", "-o", help="Output report path")
+):
+    """Generates an explainable HTML diagnostic report for a dataset."""
+    if not os.path.exists(input_file):
+        console.print(f"[bold red]Error:[/bold red] File not found: {input_file}")
+        raise typer.Exit(code=1)
+
+    console.print(f"[bold cyan]Tidely v{td.__version__}[/bold cyan] [dim]is generating HTML report for '{input_file}'...[/dim]\n")
     
-    # Report Command
-    report_parser = subparsers.add_parser("report", help="Generate a rich report for a dataset")
-    report_parser.add_argument("input_file", help="Path to the raw CSV file")
-    report_parser.add_argument("--format", "-f", default="html", choices=["html", "pdf"], help="Report format")
-    
-    args = parser.parse_args()
-    
-    if args.command == "clean":
-        print(f"Loading {args.input_file}...")
-        try:
-            df = td.load(args.input_file)
-            result = td.clean(df)
-            print(result.summary())
-            td.save(result.df, args.out)
-            print(f"\nSaved cleaned data to {args.out}")
-        except Exception as e:
-            print(f"Error cleaning data: {e}")
-            sys.exit(1)
-            
-    elif args.command == "inspect":
-        print(f"Inspecting {args.input_file}...")
-        try:
-            df = td.load(args.input_file)
-            profile = td.inspect(df)
-            # Simple terminal output for now
-            print(f"Rows: {profile.row_count} | Columns: {profile.col_count}")
-            print(f"Overall Trust Score: {profile.trust_score.overall}/100")
-        except Exception as e:
-            print(f"Error inspecting data: {e}")
-            sys.exit(1)
-            
-    elif args.command == "report":
-        print(f"Generating {args.format.upper()} report for {args.input_file}...")
-        try:
-            df = td.load(args.input_file)
-            result = td.clean(df)
-            if args.format == "html":
-                result.export_html("tidely_report.html")
-                print("Exported to tidely_report.html")
-            elif args.format == "pdf":
-                result.export_pdf("tidely_report.pdf")
-        except Exception as e:
-            print(f"Error generating report: {e}")
-            sys.exit(1)
-            
-    else:
-        parser.print_help()
+    try:
+        result = td.clean(input_file)
+        result.export(output)
+        console.print(f"\n[bold green]Success![/bold green] HTML report exported to [underline]{output}[/underline]")
+    except Exception as e:
+        console.print(f"[bold red]Report generation failed:[/bold red] {e}")
+        raise typer.Exit(code=1)
+
 
 if __name__ == "__main__":
-    main()
+    app()

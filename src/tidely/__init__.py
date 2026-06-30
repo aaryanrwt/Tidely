@@ -9,7 +9,7 @@ from tidely.core.errors import TidelyError
 from tidely.core.profile import DatasetProfile
 from tidely.core.clean_engine import RepairPlan
 
-__version__ = "0.7.0-dev"
+__version__ = "1.3.0b1"
 
 __all__ = [
     "clean",

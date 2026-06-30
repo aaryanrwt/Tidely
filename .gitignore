@@ -1,9 +1,110 @@
-dist/
-build/
-*.egg-info/
-
+# ==========================================
+# Python Development
+# ==========================================
 __pycache__/
 *.py[cod]
-.coverage
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ==========================================
+# Virtual Environments
+# ==========================================
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+clean_venv/
+
+# ==========================================
+# Testing & Code Quality
+# ==========================================
 .pytest_cache/
 .hypothesis/
+.mypy_cache/
+.ruff_cache/
+
+# ==========================================
+# Coverage Reports
+# ==========================================
+.coverage
+.coverage.*
+.coveragerc
+htmlcov/
+coverage.xml
+*.lcov
+nosetests.xml
+pylintrc
+
+# ==========================================
+# IDE & Text Editors
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# ==========================================
+# Operating System
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ==========================================
+# Logs & Diagnostics
+# ==========================================
+*.log
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ==========================================
+# Generated Reports & HTML Outputs
+# ==========================================
+*_report.html
+*report.html
+reports/
+benchmark_results/
+profiling/
+docs/_build/
+
+# ==========================================
+# Test Reports & Baselines (JSON/CSV)
+# ==========================================
+qa_*_baseline.json
+qa_*_cleaning.json
+qa_*_inspection.json
+qa_*_cleaning_report.json
+qa_*_tidely_inspection.json
+qa2_*.json
+qa3_*.json
+qa4_*.json
+qa5_*.json
+qa_ds2_temp.csv

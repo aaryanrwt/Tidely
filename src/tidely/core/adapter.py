@@ -21,17 +21,60 @@ except ImportError:
 def normalize_to_polars(
     data: Any,
 ) -> tuple[pl.DataFrame | pl.LazyFrame, str]:
-    """Normalizes Pandas, PyArrow, or Polars dataframes to a Polars representation.
+    """Normalizes filepath strings, Pandas, PyArrow, or Polars dataframes to a Polars representation.
 
     Args:
-        data: The input dataframe/table.
+        data: The input filepath string, dataframe, or table.
 
     Returns:
         Tuple: (normalized Polars DataFrame or LazyFrame, original format type string).
 
     Raises:
-        TidelyDataError: If the input data type is unsupported.
+        TidelyDataError: If the input data type is unsupported or loading fails.
     """
+    # 0. Filepath String
+    if isinstance(data, str):
+        import os
+        if not os.path.exists(data):
+            raise TidelyDataError(f"File not found: {data}")
+        ext = os.path.splitext(data)[1].lower()
+        try:
+            if ext == ".csv":
+                try:
+                    return pl.scan_csv(data), "csv_lazy"
+                except Exception:
+                    return pl.read_csv(data), "csv"
+            elif ext == ".parquet":
+                try:
+                    return pl.scan_parquet(data), "parquet_lazy"
+                except Exception:
+                    return pl.read_parquet(data), "parquet"
+            elif ext in (".ipc", ".arrow", ".feather"):
+                try:
+                    return pl.scan_ipc(data), "arrow_lazy"
+                except Exception:
+                    return pl.read_ipc(data), "arrow"
+            elif ext == ".json":
+                try:
+                    return pl.read_ndjson(data), "json_nd"
+                except Exception:
+                    return pl.read_json(data), "json"
+            elif ext in (".xlsx", ".xls"):
+                try:
+                    return pl.read_excel(data), "excel"
+                except Exception:
+                    if pd is not None:
+                        return pl.from_pandas(pd.read_excel(data)), "excel"
+                    raise
+            elif ext == ".arff":
+                return pl.from_pandas(parse_arff(data)), "arff"
+            else:
+                if pd is not None:
+                    return pl.from_pandas(pd.read_csv(data)), "pandas"
+                raise TidelyDataError(f"Unsupported file extension: {ext}")
+        except Exception as e:
+            raise TidelyDataError(f"Failed to load dataset from path '{data}': {e}") from e
+
     # 1. Polars LazyFrame
     if isinstance(data, pl.LazyFrame):
         return data, "polars_lazy"
@@ -43,6 +86,12 @@ def normalize_to_polars(
     # 3. Pandas DataFrame
     if pd is not None and isinstance(data, pd.DataFrame):
         try:
+            if pa is not None:
+                try:
+                    arrow_table = pa.Table.from_pandas(data)
+                    return pl.from_arrow(arrow_table), "pandas"
+                except Exception:
+                    pass
             res_pandas = pl.from_pandas(data)
             if isinstance(res_pandas, pl.DataFrame):
                 return res_pandas, "pandas"
@@ -50,9 +99,23 @@ def normalize_to_polars(
                 "Pandas conversion returned a Series instead of a DataFrame."
             )
         except Exception as e:
-            raise TidelyDataError(
-                f"Failed to convert Pandas DataFrame to Polars: {e}"
-            ) from e
+            try:
+                # Column-by-column fallback casting mixed types to String
+                cleaned_cols = {}
+                for col in data.columns:
+                    series = data[col]
+                    try:
+                        if pa is not None:
+                            pa.array(series, from_pandas=True)
+                        cleaned_cols[col] = series
+                    except Exception:
+                        cleaned_cols[col] = series.astype(str)
+                fallback_df = pd.DataFrame(cleaned_cols)
+                return pl.from_pandas(fallback_df), "pandas"
+            except Exception:
+                raise TidelyDataError(
+                    f"Failed to convert Pandas DataFrame to Polars: {e}"
+                ) from e
 
     # 4. PyArrow Table
     if pa is not None and isinstance(data, pa.Table):
@@ -69,5 +132,77 @@ def normalize_to_polars(
     # 5. Fallback/Unsupported
     raise TidelyDataError(
         f"Unsupported data type '{type(data).__name__}'. "
-        f"Tidely inspect() accepts Polars, Pandas, or PyArrow DataFrames/Tables."
+        f"Tidely clean()/inspect() accepts filepath strings or Polars, Pandas, or PyArrow DataFrames/Tables."
     )
+
+
+def parse_arff(filepath: str) -> "pd.DataFrame":
+    """Parses an Attribute-Relation File Format (ARFF) file into a Pandas DataFrame."""
+    import re
+    import csv
+    import pandas as pd
+
+    relation = None
+    attributes = []
+    data_started = False
+    data_lines = []
+
+    # Regex to parse attribute line: @attribute <name> <type>
+    # Name can be quoted or unquoted
+    attr_re = re.compile(r"^\s*@attribute\s+('[^']+'|\"[^\"]+\"|\S+)\s+(.+)$", re.IGNORECASE)
+
+    with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+        for line in f:
+            line_str = line.strip()
+            if not line_str or line_str.startswith("%"):
+                continue
+
+            if not data_started:
+                if line_str.lower().startswith("@relation"):
+                    relation = line_str.split(None, 1)[1].strip()
+                    continue
+                m = attr_re.match(line_str)
+                if m:
+                    attr_name = m.group(1).strip("'\"")
+                    attr_type = m.group(2).strip()
+                    attributes.append((attr_name, attr_type))
+                    continue
+                if line_str.lower().startswith("@data"):
+                    data_started = True
+                    continue
+            else:
+                data_lines.append(line_str)
+
+    if not attributes:
+        raise TidelyDataError(f"No attributes found in ARFF file: {filepath}")
+
+    columns = [attr[0] for attr in attributes]
+    rows = []
+    
+    # Parse data lines
+    for line in data_lines:
+        try:
+            # Respect quotes using standard library csv reader
+            parts = next(csv.reader([line]))
+            # Replace '?' with None (represents Null)
+            parts = [None if p.strip() == "?" else p.strip() for p in parts]
+            # Ensure row matches number of columns
+            if len(parts) < len(columns):
+                parts.extend([None] * (len(columns) - len(parts)))
+            elif len(parts) > len(columns):
+                parts = parts[:len(columns)]
+            rows.append(parts)
+        except Exception:
+            pass
+
+    df = pd.DataFrame(rows, columns=columns)
+
+    # Cast types based on attribute metadata
+    for name, attr_type in attributes:
+        type_lower = attr_type.lower()
+        if "numeric" in type_lower or "real" in type_lower or "integer" in type_lower:
+            df[name] = pd.to_numeric(df[name], errors="coerce")
+        elif type_lower.startswith("{") and type_lower.endswith("}"):
+            df[name] = df[name].astype(object)
+
+    return df

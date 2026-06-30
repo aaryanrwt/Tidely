@@ -1,153 +1,295 @@
 <p align="center">
-  <img src="assets/logo.png" width="140" alt="Tidely Logo">
+  <img src="assets/logo.png" width="120">
+</p>
+
+<h1 align="center">Tidely</h1>
+
+<p align="center">
+The Operating System for Data Quality
 </p>
 
 <p align="center">
-  <img src="assets/banner.png" alt="Tidely Banner" width="100%">
+<img src="assets/banner.png" width="100%">
 </p>
 
-# Tidely
+<p align="center">
 
-[![PyPI version](https://img.shields.io/pypi/v/tidely)](https://pypi.org/project/tidely/)
-[![Python Versions](https://img.shields.io/pypi/pyversions/tidely)](https://pypi.org/project/tidely/)
-[![Downloads](https://img.shields.io/pypi/dm/tidely)](https://pypi.org/project/tidely/)
-[![License](https://img.shields.io/github/license/aaryanrwt/Tidely)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/aaryanrwt/Tidely?style=social)](https://github.com/aaryanrwt/Tidely)
-[![GitHub Issues](https://img.shields.io/github/issues/aaryanrwt/Tidely)](https://github.com/aaryanrwt/Tidely/issues)
-[![Last Commit](https://img.shields.io/github/last-commit/aaryanrwt/Tidely)](https://github.com/aaryanrwt/Tidely)
-[![CI](https://github.com/aaryanrwt/Tidely/actions/workflows/ci.yml/badge.svg)](https://github.com/aaryanrwt/Tidely/actions)
+![PyPI](https://img.shields.io/pypi/v/tidely)
+![Python](https://img.shields.io/pypi/pyversions/tidely)
+![License](https://img.shields.io/github/license/aaryanrwt/Tidely)
+![Stars](https://img.shields.io/github/stars/aaryanrwt/Tidely)
+![Issues](https://img.shields.io/github/issues/aaryanrwt/Tidely)
+![Downloads](https://img.shields.io/pypi/dm/tidely)
 
-Zero-configuration, explainable data cleaning for Python.
+</p>
 
----
-
-## What is Tidely?
-
-Tidely is a local-first, deterministic data cleaning library designed to replace hundreds of lines of fragile Pandas preprocessing code with a single, highly optimized command. 
-
-Tidely automatically profiles your dataset, infers semantic types (Dates, Emails, Currency, IDs), safely downcasts memory footprint by up to 85%, and structures unstructured text—all without silently mutating your business logic or randomly dropping values.
-
-## Why Tidely Exists
-
-Data scientists and engineers spend 80% of their time writing repetitive data cleaning boilerplate: fixing `M/D/YYYY` dates, trimming whitespaces, downcasting 64-bit floats to save memory, parsing currency symbols, and dropping exact duplicate rows. 
-
-Tidely eliminates this boilerplate entirely. It is built on three core philosophies:
-1. **Never silently delete data.** Every transformation is tracked, explained, and non-destructive.
-2. **Local-first and Secure.** Tidely runs entirely on your CPU. No API keys, no LLMs, no cloud processing.
-3. **Deterministic.** The same dirty DataFrame yields the exact same clean DataFrame, every single time.
+<p align="center">
+Zero-Configuration • Explainable • Deterministic • Fast
+</p>
 
 ---
 
-## ⚡ Quick Start
-
-### Installation
+## Install
 
 ```bash
 pip install tidely
 ```
 
-### The One-Minute Example
+## The Magic
 
 ```python
-import pandas as pd
 import tidely as td
 
-# 1. Load your dirty data
-df = pd.read_csv("dirty_data.csv")
+result = td.clean("sales.csv")
 
-# 2. Clean it automatically
-result = td.clean(df)
-
-# 3. Retrieve the clean, memory-optimized DataFrame
 clean_df = result.df
 
-# 4. View a detailed, explainable summary of what changed
 print(result.summary())
 ```
 
 ---
 
-## 🔍 Before vs After
+# Why Tidely?
 
-**Before Tidely:**
+Real-world datasets are messy.
+
+Missing values.
+
+Broken dates.
+
+Mixed datatypes.
+
+Duplicate records.
+
+Memory waste.
+
+Encoding issues.
+
+Schema drift.
+
+Normally you spend hours writing cleaning scripts.
+
+Tidely turns all of that into a single function call.
+
+---
+
+# Dataset Intelligence
+
 ```python
-df = pd.read_csv("data.csv")
-df.drop_duplicates(inplace=True)
-df['date'] = pd.to_datetime(df['date'], errors='coerce')
-df['price'] = df['price'].str.replace('$', '').astype(float)
-df['category'] = df['category'].astype('category')
-df['is_active'] = df['is_active'].map({'yes': True, 'no': False})
-# ... 50 more lines of boilerplate ...
+profile = td.inspect("sales.csv")
+
+profile.show()
 ```
 
-**After Tidely:**
-```python
-import tidely as td
-df = td.clean(pd.read_csv("data.csv")).df
-```
+Output
+
+✔ Trust Score
+
+✔ Dataset DNA
+
+✔ Semantic Detection
+
+✔ Missing Values
+
+✔ Duplicate Analysis
+
+✔ Memory Analysis
+
+✔ ML Readiness
+
+✔ Data Quality Score
 
 ---
 
-## 🚀 Core Features
+# Why Use Tidely?
 
-- **Semantic Intelligence**: Natively infers and standardizes Emails, URLs, Currencies, Boolean permutations (yes/y/true/1), IPv4, SSNs, and Dates (including US formats like `MM/DD/YYYY`).
-- **Memory Optimization**: Automatically downcasts over-provisioned 64-bit integers/floats to 16/32-bit types, and converts low-cardinality strings to Categorical pointers. Safely reduces Pandas memory footprints by 40-85%.
-- **Zero-Corruption Duplicate Removal**: Identifies and drops exact duplicate rows that skew statistical modeling.
-- **Deep Explainability**: Generates an exhaustive `summary()` explaining *what* was changed, *why* it was changed, and the *impact* of the change.
-- **Business Logic Protection**: Explicitly issues `Warnings` for missing financial or identifier data rather than blindly imputing zeros.
-
-### Supported DataFrames
-Tidely currently supports:
-* `pandas.DataFrame`
-* `polars.DataFrame`
-* `polars.LazyFrame`
-* `pyarrow.Table`
-
----
-
-## 🏎️ Performance Philosophy
-
-Tidely is designed for enterprise scale. It operates heavily via vectorized operations backed by `pandas` and `polars`. 
-
-During internal benchmarking, Tidely processed 10,000,000 rows across mixed-types in **under 26 seconds**, safely shrinking the DataFrame from 591 MB down to 85 MB without corrupting type definitions. We rely purely on algorithmic inference—no slow machine learning heuristics or network latency.
+| Feature | Pandas | Tidely |
+|----------|---------|---------|
+| Read CSV | ✅ | ✅ |
+| Auto Detect Dates | ❌ | ✅ |
+| Auto Clean Dataset | ❌ | ✅ |
+| Memory Optimization | Manual | Automatic |
+| Duplicate Detection | Manual | Automatic |
+| Missing Value Strategy | Manual | Automatic |
+| Semantic Column Detection | ❌ | ✅ |
+| Explain Every Change | ❌ | ✅ |
+| Health Score | ❌ | ✅ |
+| Trust Score | ❌ | ✅ |
+| Production Summary | ❌ | ✅ |
 
 ---
 
-## 🛡️ Validation Summary (Public Beta)
+# Production Validation
 
-Tidely v1.0 has completed an extensive internal validation campaign covering more than twenty real-world datasets across healthcare, finance, retail, manufacturing, government, environmental science, e-commerce, and enterprise Excel workflows.
+Tidely has been validated on
 
-The library has also passed property-based testing (Hypothesis), fuzz testing, large-scale stress testing up to 10 million rows, API stability checks, and cross-version compatibility testing. 
-
-Based on these results, Tidely is now entering **Public Beta**, where broader community feedback will continue to strengthen its reliability.
-
----
-
-## 📚 Documentation
-
-Detailed documentation is available in the `docs/` directory:
-- [Introduction & Philosophy](docs/introduction.md)
-- [Installation Guide](docs/installation.md)
-- [Cleaning Guide](docs/cleaning_guide.md)
-- [Semantic Detection Engine](docs/semantic_detection.md)
-- [Memory & Performance](docs/performance.md)
-- [Validation Guide](docs/validation_guide.md)
-- [FAQ](docs/faq.md)
+| Dataset Type | Status |
+|--------------|--------|
+| CSV | ✅ |
+| Excel (.xlsx) | ✅ |
+| ARFF | ✅ |
+| Government Open Data | ✅ |
+| Educational Data | ✅ |
+| ML Benchmark Datasets | ✅ |
+| Large CSV (>3 Million Rows) | ✅ |
+| Time Series | ✅ |
+| Mixed Datatypes | ✅ |
+| Corrupted Data | ✅ |
 
 ---
 
-## 🛣️ Roadmap
-- Multi-threaded processing for CSV batch-cleaning.
-- Out-of-core chunked processing for data exceeding local RAM.
-- Geographic coordinate standardization (Lat/Lon).
-- Enhanced HTML extraction capabilities.
+# Validation Results
+
+Version
+
+**v1.3.0-beta**
+
+| Dataset | Rows | Health Before | Health After |
+|-----------|---------|----------------|---------------|
+| Parking Meters | 52 | 94 | 96 |
+| Credit-G | 1000 | 86 | 90 |
+| Diabetes | 768 | 86 | 92 |
+| Iris | 150 | 92 | 92 |
+| Allegations | 57 | 95 | 92 |
+| Mathematics | 59 | 97 | 94 |
 
 ---
 
-## 🤝 Contributing
+# Benchmarks
 
-Tidely is an open-source project and community contributions are highly welcome. Please review our [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before submitting pull requests.
+3,055,000 Row Dataset
 
-## License
+| Metric | Result |
+|----------|----------|
+| Runtime | 2.37 sec |
+| Original Memory | 148 MB |
+| Final Memory | 58 MB |
+| Memory Saved | 61% |
 
-Tidely is released under the [MIT License](LICENSE).
+---
+
+# Supported Formats
+
+- CSV
+
+- Excel
+
+- Parquet
+
+- JSON
+
+- TSV
+
+- Feather
+
+- ARFF
+
+More coming soon.
+
+---
+
+# Explainable Cleaning
+
+Tidely never silently changes your data.
+
+Every transformation is documented.
+
+Example
+
+✓ Converted "Order Date" to datetime
+
+Reason
+
+Detected temporal values.
+
+Impact
+
+Allows time-series operations.
+
+---
+
+✓ Downcasted int64 → int16
+
+Reason
+
+Values fit inside Int16.
+
+Impact
+
+61% lower memory.
+
+---
+
+# Philosophy
+
+Tidely follows three principles.
+
+## Never silently modify data.
+
+Every transformation is visible.
+
+## Deterministic.
+
+Same input.
+
+Same output.
+
+Every time.
+
+## Local First.
+
+Runs entirely on your machine.
+
+No cloud.
+
+No API keys.
+
+No LLMs.
+
+---
+
+# Roadmap
+
+- [x] CSV Cleaning
+
+- [x] Explainable Reports
+
+- [x] Memory Optimization
+
+- [x] Semantic Detection
+
+- [x] ARFF Support
+
+- [x] Excel Support
+
+- [ ] Intelligent Missing Value Imputation
+
+- [ ] Fuzzy Duplicate Detection
+
+- [ ] Streaming Engine
+
+- [ ] DuckDB Integration
+
+- [ ] Out-of-Core Cleaning
+
+- [ ] Auto Feature Engineering
+
+- [ ] SQL Dataset Support
+
+- [ ] Distributed Processing
+
+---
+
+# Contributing
+
+PRs are welcome.
+
+Bug reports are welcome.
+
+Feature requests are welcome.
+
+---
+
+# License
+
+MIT
