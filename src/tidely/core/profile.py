@@ -39,6 +39,7 @@ class DatasetProfile:
         semantic_types: dict[str, dict[str, Any]],
         format_name: str,
         _df_ref: pl.DataFrame,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Initialize DatasetProfile."""
         self.row_count = row_count
@@ -49,6 +50,7 @@ class DatasetProfile:
         self.semantic_types = semantic_types
         self.format_name = format_name
         self._df_ref = _df_ref
+        self.metadata = metadata or {}
 
     def show(self) -> None:
         """Renders the stunning consult-grade Dataset Inspection terminal dashboard."""

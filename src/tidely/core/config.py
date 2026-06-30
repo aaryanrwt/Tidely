@@ -10,7 +10,7 @@ from tidely.core.errors import ConfigurationError
 try:
     import yaml
 except ImportError:
-    yaml = None  # type: ignore
+    yaml = None
 
 
 class EngineConfig(BaseModel):

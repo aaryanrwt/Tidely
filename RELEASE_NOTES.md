@@ -1,8 +1,8 @@
-# Tidely v1.3.0 Beta: Release Notes
+# Tidely v1.4.0 Release Notes
 
-Tidely v1.3.0 Beta introduces extensive reliability, performance, and format compatibility updates, validated across multiple industry datasets (UCI Machine Learning repository, Kaggle campaigns, government records, and educational data).
+Tidely v1.4.0 introduces automatic DuckDB integration, out-of-core streaming, engine auto-routing, and adaptive missing value engines, validated across multiple industry datasets.
 
-## 🚀 Highlights in v1.3.0
+## 🚀 Highlights in v1.4.0
 - **Native ARFF Format Support:** Introducing a zero-dependency, pure-Python Attribute-Relation File Format (ARFF) parser supporting numeric, real, and nominal types.
 - **DNA Semantic Protection:** Added semantic nucleotide pattern recognition (`"DNA Sequence"`) to protect biological sequences from casing transformations or normalizations.
 - **Robust Mixed-Type Load Fallback:** Prevents loading crashes on dataframes with mixed-type columns (e.g. whitespace strings inside numeric values) by automatically falling back to safe string coercion.
@@ -18,7 +18,7 @@ Tidely v1.3.0 Beta introduces extensive reliability, performance, and format com
 
 ## 📦 Installation
 ```bash
-pip install tidely==1.3.0b2
+pip install tidely==1.4.0
 ```
 
 ## 📖 Known Limitations & Next Steps

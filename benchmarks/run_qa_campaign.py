@@ -1,4 +1,4 @@
-"""Stress testing and QA campaign for Tidely v1.3."""
+"""Stress testing and QA campaign for Tidely v1.4.0."""
 
 import os
 import time
@@ -190,7 +190,7 @@ def main():
         "# Tidely QA Reliability & Stress Testing Campaign Report",
         "",
         "## Executive Summary",
-        "This report outlines the reliability, stress-testing, and performance results of the Tidely v1.3 engine on real-world datasets.",
+        "This report outlines the reliability, stress-testing, and performance results of the Tidely v1.4.0 engine on real-world datasets.",
         "",
         "## Performance & Reliability Results",
         "",

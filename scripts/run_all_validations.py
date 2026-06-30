@@ -40,4 +40,4 @@ if __name__ == "__main__":
         else:
             print(f"Warning: Script {script} not found, skipping.")
 
-    print("\n✅ GLOBAL REGRESSION SUITE PASSED SUCCESSFULLY.")
+    print("\n[SUCCESS] GLOBAL REGRESSION SUITE PASSED SUCCESSFULLY.")

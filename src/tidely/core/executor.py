@@ -10,7 +10,7 @@ class CleaningExecutor:
     in this execution layer to guarantee performance.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes the ExecutionEngine."""
         pass
 
@@ -70,7 +70,7 @@ class CleaningExecutor:
                 else:
                     import polars as pl
 
-                    df = df.with_columns(pl.col(col).fill_null(strategy="median"))
+                    df = df.with_columns(pl.col(col).fill_null(pl.col(col).median()))
 
             elif atype == "impute_mode" and col:
                 if is_pandas:

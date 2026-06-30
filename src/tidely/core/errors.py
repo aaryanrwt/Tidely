@@ -56,3 +56,9 @@ class TidelyExecutionError(TidelyError):
     """
 
     pass
+
+
+class ConfigurationError(TidelyError):
+    """Raised when configuration parsing or validation fails."""
+
+    pass

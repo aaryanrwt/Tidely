@@ -4,7 +4,7 @@
     "size_bytes": 424095,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 0.029659299998456845,
+    "execution_time_sec": 0.023441599998477614,
     "peak_memory_kb": 210,
     "row_count_before": null,
     "row_count_after": null
@@ -14,7 +14,7 @@
     "size_bytes": 19284,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 0.00013929999840911478,
+    "execution_time_sec": 0.00015440000061062165,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -24,7 +24,7 @@
     "size_bytes": 23989,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 7.609999738633633e-05,
+    "execution_time_sec": 0.00014209999790182337,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -34,7 +34,7 @@
     "size_bytes": 3816592,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 6.589999975403771e-05,
+    "execution_time_sec": 8.730000263312832e-05,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -44,7 +44,7 @@
     "size_bytes": 158792300,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 6.290000237640925e-05,
+    "execution_time_sec": 0.00013870000111637637,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -54,7 +54,7 @@
     "size_bytes": 10522925,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 6.070000017643906e-05,
+    "execution_time_sec": 9.729999874252826e-05,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -64,7 +64,7 @@
     "size_bytes": 349423206,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 6.290000237640925e-05,
+    "execution_time_sec": 8.189999789465219e-05,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -74,7 +74,7 @@
     "size_bytes": 162291,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 0.00020020000010845251,
+    "execution_time_sec": 8.299999899463728e-05,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -84,7 +84,7 @@
     "size_bytes": 37419,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 9.610000051907264e-05,
+    "execution_time_sec": 6.829999983892776e-05,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -94,7 +94,7 @@
     "size_bytes": 7487,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 7.510000068577938e-05,
+    "execution_time_sec": 6.660000144620426e-05,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -104,7 +104,7 @@
     "size_bytes": 46887,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 8.539999907952733e-05,
+    "execution_time_sec": 7.080000068526715e-05,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -114,7 +114,7 @@
     "size_bytes": 2524601,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 0.00012159999823779799,
+    "execution_time_sec": 6.570000186911784e-05,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -124,7 +124,7 @@
     "size_bytes": 1337226,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 0.00014840000221738592,
+    "execution_time_sec": 6.769999890821055e-05,
     "peak_memory_kb": 3,
     "row_count_before": null,
     "row_count_after": null
@@ -134,7 +134,7 @@
     "size_bytes": 2028486,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 0.0001326000019616913,
+    "execution_time_sec": 6.070000017643906e-05,
     "peak_memory_kb": 2,
     "row_count_before": null,
     "row_count_after": null
@@ -144,7 +144,7 @@
     "size_bytes": 60824000,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 0.00011789999916800298,
+    "execution_time_sec": 6.089999806135893e-05,
     "peak_memory_kb": 2,
     "row_count_before": null,
     "row_count_after": null
@@ -154,7 +154,7 @@
     "size_bytes": 115412276,
     "exception": null,
     "warnings": [],
-    "execution_time_sec": 0.00012769999739248306,
+    "execution_time_sec": 5.94000011915341e-05,
     "peak_memory_kb": 2,
     "row_count_before": null,
     "row_count_after": null

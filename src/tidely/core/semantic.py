@@ -10,7 +10,7 @@ class SemanticEngine:
     Assigns confidence and risk scores to each column.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initializes the SemanticEngine and compiles regex patterns."""
         # Compile regexes once to optimize startup and search speed
         self.patterns = {
@@ -35,6 +35,15 @@ class SemanticEngine:
             "Percentage": re.compile(r"^\d+(\.\d+)?\s*\%$"),
             "JSON": re.compile(r"^\s*\{.*\}\s*$|^\s*\[.*\]\s*$"),
             "DNA Sequence": re.compile(r"^[ACGTNacgtn\s]{10,}$"),
+            "SSN": re.compile(r"^\d{3}-\d{2}-\d{4}$"),
+            "Credit Card": re.compile(r"^(?:\d{4}[-\s]?){3}\d{4}$"),
+            "IBAN": re.compile(r"^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$"),
+            "US State": re.compile(r"^(?:A[LKSZRAEP]|C[AOT]|D[EC]|F[LM]|G[AU]|HI|I[ADLN]|K[SY]|LA|M[ADEHINOPST]|N[CDEHJMVY]|O[HKR]|P[ARW]|RI|S[CD]|T[NX]|UT|V[AIT]|W[AIVY])$", re.IGNORECASE),
+            "Gender": re.compile(r"^(male|female|m|f|other|unknown|non-binary)$", re.IGNORECASE),
+            "Age": re.compile(r"^(?:100|[1-9]?\d)$"),
+            "Salary": re.compile(r"^[\$\€\£\¥]?\s*\d{3,10}(?:[,\.]\d{2})?$"),
+            "Hash": re.compile(r"^[a-fA-F0-9]{32}$|^[a-fA-F0-9]{40}$|^[a-fA-F0-9]{64}$"),
+            "HTML": re.compile(r"<[a-z/][\s\S]*>", re.IGNORECASE),
         }
 
     def infer(self, df: Any, metadata: dict[str, Any]) -> dict[str, Any]:
@@ -126,7 +135,7 @@ class SemanticEngine:
                         )
                         pattern_rates[p_name] = matches / len(sample_list)
 
-                    best_match = max(pattern_rates, key=pattern_rates.get)
+                    best_match = max(pattern_rates, key=lambda k: pattern_rates[k])
                     best_rate = pattern_rates[best_match]
 
                     if best_rate >= 0.5:
@@ -167,6 +176,33 @@ class SemanticEngine:
                                 "None (DNA sequence preserved exactly)"
                             )
                             risk_score = 0.0
+                        elif best_match == "SSN":
+                            recommended_cleaning = "Mask/Tokenize or validate SSN digits"
+                            risk_score = 0.8
+                        elif best_match == "Credit Card":
+                            recommended_cleaning = "Mask/Tokenize PCI-DSS card digits"
+                            risk_score = 0.9
+                        elif best_match == "IBAN":
+                            recommended_cleaning = "Validate bank account format"
+                            risk_score = 0.7
+                        elif best_match == "US State":
+                            recommended_cleaning = "Convert to standard uppercase state code"
+                            risk_score = 0.0
+                        elif best_match == "Gender":
+                            recommended_cleaning = "Standardize gender categories"
+                            risk_score = 0.0
+                        elif best_match == "Age":
+                            recommended_cleaning = "Enforce integer range [0, 120]"
+                            risk_score = 0.0
+                        elif best_match == "Salary":
+                            recommended_cleaning = "Extract numeric salary value"
+                            risk_score = 0.1
+                        elif best_match == "Hash":
+                            recommended_cleaning = "Format hash standard lowercase representation"
+                            risk_score = 0.0
+                        elif best_match == "HTML":
+                            recommended_cleaning = "Strip markup/HTML tags to plain text"
+                            risk_score = 0.2
                     else:
                         # Fallback heuristic rules
                         if "address" in col_lower or any(

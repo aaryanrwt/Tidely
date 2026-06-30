@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-06-30
+
+### Added
+- **Automatic DuckDB Integration**: Internally route huge CSV/Parquet files and operations exceeding RAM to DuckDB for fast out-of-core execution.
+- **Automatic Engine Selection**: DecisionEngine dynamically selects between Polars Eager, Polars Lazy, DuckDB, and Out-of-Core Streaming.
+- **Out-of-Core Streaming Engine**: High-throughput chunked processor cleaning datasets exceeding system memory with deterministic guarantees.
+- **Adaptive Imputation**: Dynamic group stats and precomputed imputation models.
+
+### Improved
+- Memory footprint profiling and cost estimation in the Dataset Inspector.
+- Visual Lighthouse-style reports containing detailed engine statistics, runtime/memory breakdowns, and selection explanations.
+
 ## [1.3.0b2] - 2026-06-30
 
 - Decision Engine introduced

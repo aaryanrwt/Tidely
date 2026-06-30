@@ -35,6 +35,8 @@ class RepairAction:
     expected_score_bump: int
     rule_fn: Callable[[pl.DataFrame], pl.DataFrame]
     rows_affected: int = 0
+    column: str = ""
+    sql_expr: str | None = None
 
 
 class RepairPlan:
@@ -53,6 +55,90 @@ class RepairPlan:
         self.initial_score = initial_score
         self.target_score = target_score
         self.audit_log: list[dict[str, Any]] = []
+
+    def compile_to_sql(self, source: str, columns: list[str]) -> str:
+        """Compiles the sequence of RepairActions into a single DuckDB SQL query.
+
+        Args:
+            source: The source table or 'file.csv' string.
+            columns: The list of column names in the dataset.
+
+        Returns:
+            str: The SQL query.
+        """
+        # Map columns to safe SQL names and map source column references
+        sql_cols = []
+        source_cols = []
+        for idx, c in enumerate(columns):
+            if c == "":
+                sql_name = f"_unnamed_{idx}"
+                src_name = f"column{idx}"
+            else:
+                sql_name = f'"{c}"'
+                src_name = f'"{c}"'
+            sql_cols.append(sql_name)
+            source_cols.append(src_name)
+
+        # If no actions, simple SELECT
+        if not self.actions:
+            cols_str = ", ".join(f"{src} AS {sql}" for src, sql in zip(source_cols, sql_cols, strict=True))
+            return f'SELECT {cols_str} FROM "{source}"' if "." not in source and "/" not in source and "\\" not in source else f"SELECT {cols_str} FROM '{source}'"
+
+        ctes = []
+        current_source = f"'{source}'" if "." in source or "/" in source or "\\" in source else f'"{source}"'
+        prev_step = "raw_source"
+
+        # Initial select to set up raw CTE
+        cols_str = ", ".join(f"{src} AS {sql}" for src, sql in zip(source_cols, sql_cols, strict=True))
+        ctes.append(f"raw_source AS (SELECT {cols_str} FROM {current_source})")
+
+        for idx, action in enumerate(self.actions):
+            step_name = f"step_{idx + 1}"
+
+            # Row-level deduplications
+            if action.category == "Duplicate Rows" and "Dropped exact duplicate rows" in action.what_changed:
+                ctes.append(f"{step_name} AS (SELECT DISTINCT * FROM {prev_step})")
+            elif action.category == "Duplicate IDs" or (action.category == "Duplicate Rows" and action.column):
+                col = action.column
+                if col in columns:
+                    sql_col = f"_unnamed_{columns.index(col)}" if col == "" else f'"{col}"'
+                    sub_cols = ", ".join(sql_cols)
+                    ctes.append(
+                        f"{step_name} AS ("
+                        f"  SELECT {sub_cols} FROM ("
+                        f"    SELECT *, row_number() OVER (PARTITION BY {sql_col}) AS __rn FROM {prev_step}"
+                        f"  ) WHERE __rn = 1"
+                        f")"
+                    )
+                else:
+                    ctes.append(f"{step_name} AS (SELECT DISTINCT * FROM {prev_step})")
+            else:
+                # Column transformation
+                target_col = action.column
+                sql_expr = action.sql_expr
+                if target_col in columns and sql_expr:
+                    if target_col == "":
+                        target_idx = columns.index(target_col)
+                        sql_expr = sql_expr.replace('""', f"_unnamed_{target_idx}")
+
+                    select_exprs = []
+                    for c_idx, c in enumerate(columns):
+                        sql_c = sql_cols[c_idx]
+                        if c == target_col:
+                            select_exprs.append(f"{sql_expr} AS {sql_c}")
+                        else:
+                            select_exprs.append(sql_c)
+                    exprs_str = ", ".join(select_exprs)
+                    ctes.append(f"{step_name} AS (SELECT {exprs_str} FROM {prev_step})")
+                else:
+                    # If action doesn't support SQL, pass through
+                    ctes.append(f"{step_name} AS (SELECT * FROM {prev_step})")
+
+            prev_step = step_name
+
+        ctes_str = ",\n".join(ctes)
+        final_cols = ", ".join(sql_cols)
+        return f"WITH {ctes_str}\nSELECT {final_cols} FROM {prev_step}"
 
     def show(self) -> None:
         """Renders the execution plan in a beautiful terminal UI."""

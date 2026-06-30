@@ -225,7 +225,7 @@ def main():
         [
             "",
             "## Final Verdict",
-            "Tidely v1.3 has successfully passed the Mixed Dataset validation campaign and is **production-ready**.",
+            "Tidely v1.4.0 has successfully passed the Mixed Dataset validation campaign and is **production-ready**.",
             "",
         ]
     )

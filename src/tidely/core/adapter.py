@@ -18,6 +18,33 @@ except ImportError:
     pa = None  # type: ignore[assignment]
 
 
+def estimate_dataset_size(data: Any) -> int:
+    """Estimates the size of the dataset in bytes without loading it into RAM."""
+    import os
+    if isinstance(data, str):
+        if os.path.exists(data):
+            return int(os.path.getsize(data))
+    elif hasattr(data, "estimated_size"):
+        try:
+            return int(data.estimated_size())
+        except Exception:
+            pass
+    elif hasattr(data, "memory_usage"):
+        try:
+            return int(data.memory_usage(deep=True).sum())
+        except Exception:
+            try:
+                return int(data.memory_usage().sum())
+            except Exception:
+                pass
+    elif hasattr(data, "nbytes"):
+        try:
+            return int(data.nbytes)
+        except Exception:
+            pass
+    return 10 * 1024 * 1024  # Default to 10MB fallback
+
+
 def normalize_to_polars(
     data: Any,
 ) -> tuple[pl.DataFrame | pl.LazyFrame, str]:
@@ -92,7 +119,8 @@ def normalize_to_polars(
             if pa is not None:
                 try:
                     arrow_table = pa.Table.from_pandas(data)
-                    return pl.from_arrow(arrow_table), "pandas"
+                    from typing import cast
+                    return cast(pl.DataFrame, pl.from_arrow(arrow_table)), "pandas"
                 except Exception:
                     pass
             res_pandas = pl.from_pandas(data)
@@ -191,9 +219,8 @@ def parse_arff(filepath: str) -> "pd.DataFrame":
     for line in data_lines:
         try:
             # Respect quotes using standard library csv reader
-            parts = next(csv.reader([line]))
-            # Replace '?' with None (represents Null)
-            parts = [None if p.strip() == "?" else p.strip() for p in parts]
+            parts_raw = next(csv.reader([line]))
+            parts: list[Any] = [None if p.strip() == "?" else p.strip() for p in parts_raw]
             # Ensure row matches number of columns
             if len(parts) < len(columns):
                 parts.extend([None] * (len(columns) - len(parts)))

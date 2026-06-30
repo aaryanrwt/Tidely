@@ -27,7 +27,7 @@ def clean(
     dry_run: bool = typer.Option(
         False, "--dry-run", help="Simulate cleaning without saving"
     ),
-):
+) -> None:
     """Cleans a dataset automatically and outputs a beautiful consult-grade summary."""
     if not os.path.exists(input_file):
         console.print(f"[bold red]Error:[/bold red] File not found: {input_file}")
@@ -44,7 +44,7 @@ def clean(
         # summary is already printed inside plan.show() which clean() triggers,
         # but let's make sure the CleanResult summary is accessible
 
-        if not dry_run:
+        if not dry_run and output is not None:
             td.save(result.df, output)
             console.print(
                 f"\n[bold green]Success![/bold green] Cleaned dataset saved to [underline]{output}[/underline]"
@@ -59,7 +59,7 @@ def inspect(
     input_file: str = typer.Argument(
         ..., help="Path to the raw CSV, Parquet, or JSON file"
     ),
-):
+) -> None:
     """Profiles a dataset and generates a comprehensive Trust Score and semantic diagnosis."""
     if not os.path.exists(input_file):
         console.print(f"[bold red]Error:[/bold red] File not found: {input_file}")
@@ -85,7 +85,7 @@ def report(
     output: str | None = typer.Option(
         "tidely_report.html", "--out", "-o", help="Output report path"
     ),
-):
+) -> None:
     """Generates an explainable HTML diagnostic report for a dataset."""
     if not os.path.exists(input_file):
         console.print(f"[bold red]Error:[/bold red] File not found: {input_file}")
@@ -97,7 +97,8 @@ def report(
 
     try:
         result = td.clean(input_file)
-        result.export(output)
+        if output is not None:
+            result.export(output)
         console.print(
             f"\n[bold green]Success![/bold green] HTML report exported to [underline]{output}[/underline]"
         )

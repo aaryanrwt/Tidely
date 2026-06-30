@@ -10,7 +10,7 @@ except ImportError:
 try:
     import polars as pl
 except ImportError:
-    pl = None
+    pl = None  # type: ignore[assignment]
 
 from tidely.core.adapter import normalize_to_polars
 from tidely.core.engine import run_pipeline
@@ -76,10 +76,10 @@ def inspect(data: Any) -> Any:
         df = pl_data
 
     detector = DetectionEngine()
-    metadata = detector.analyze(data)
+    metadata = detector.analyze(df)
 
     semantic_engine = SemanticEngine()
-    semantic_types = semantic_engine.infer(data, metadata)
+    semantic_types = semantic_engine.infer(df, metadata)
 
     dna = infer_dataset_dna(df.columns)
     trust_score = compute_trust_scores(df, semantic_types, dna.domain)
@@ -93,10 +93,11 @@ def inspect(data: Any) -> Any:
         semantic_types=semantic_types,
         format_name=format_name,
         _df_ref=df,
+        metadata=metadata,
     )
 
 
-def validate(data: Any, schema: dict) -> bool:
+def validate(data: Any, schema: dict[str, Any]) -> bool:
     """Validates the dataset against a provided schema dictionary.
 
     Args:
@@ -141,19 +142,51 @@ def load(filepath: str, **kwargs: Any) -> Any:
 
 
 def save(data: Any, filepath: str, **kwargs: Any) -> None:
-    """Helper method to save a DataFrame to disk.
+    """Helper method to save a DataFrame or LazyFrame to disk.
 
     Args:
-        data (Any): The DataFrame to save.
+        data (Any): The DataFrame or LazyFrame to save.
         filepath (str): The destination path.
-        **kwargs: Additional arguments passed to the underlying engine (`to_csv`).
+        **kwargs: Additional arguments passed to the underlying engine.
 
     Raises:
         TidelyDataError: If the data object or format is unsupported.
     """
-    if hasattr(data, "to_csv") and filepath.endswith(".csv"):
-        data.to_csv(filepath, **kwargs)
-    elif hasattr(data, "write_csv") and filepath.endswith(".csv"):
-        data.write_csv(filepath, **kwargs)
+    ext = filepath.split(".")[-1].lower()
+
+    # Handle Polars LazyFrame
+    if isinstance(data, pl.LazyFrame):
+        try:
+            if ext == "csv":
+                try:
+                    data.sink_csv(filepath, **kwargs)
+                except Exception:
+                    data.collect().write_csv(filepath, **kwargs)
+            elif ext == "parquet":
+                try:
+                    data.sink_parquet(filepath, **kwargs)
+                except Exception:
+                    data.collect().write_parquet(filepath, **kwargs)
+            else:
+                raise TidelyDataError(f"Unsupported lazy export format: .{ext}")
+            return
+        except Exception as e:
+            raise TidelyDataError(f"Failed to save LazyFrame to {filepath}: {e}") from e
+
+    # Handle standard eager dataframes
+    if ext == "csv":
+        if hasattr(data, "to_csv"):
+            data.to_csv(filepath, **kwargs)
+        elif hasattr(data, "write_csv"):
+            data.write_csv(filepath, **kwargs)
+        else:
+            raise TidelyDataError("Unsupported CSV data object.")
+    elif ext == "parquet":
+        if hasattr(data, "to_parquet"):
+            data.to_parquet(filepath, **kwargs)
+        elif hasattr(data, "write_parquet"):
+            data.write_parquet(filepath, **kwargs)
+        else:
+            raise TidelyDataError("Unsupported Parquet data object.")
     else:
-        raise TidelyDataError("Unsupported data object or format for save().")
+        raise TidelyDataError(f"Unsupported format .{ext} for save().")

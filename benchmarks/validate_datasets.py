@@ -1,4 +1,4 @@
-"""Automated dataset validation script for Tidely v1.3."""
+"""Automated dataset validation script for Tidely v1.4.0."""
 
 import os
 import time
@@ -95,7 +95,7 @@ def run_validation():
     report_lines = [
         "# Tidely Automated Dataset Validation Report",
         "",
-        "This report outlines performance and quality benchmarks of Tidely v1.3 on large-scale datasets representing multiple industries.",
+        "This report outlines performance and quality benchmarks of Tidely v1.4.0 on large-scale datasets representing multiple industries.",
         "",
         "## Performance Metrics Table",
         "",
