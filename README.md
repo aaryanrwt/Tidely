@@ -45,19 +45,60 @@
 
 ## 2. Elevator Pitch
 
-Tidely automatically profiles, cleans, validates, and optimizes tabular datasets with a single line of code, delivering production-ready dataframes to your downstream pipelines.
+Tidely automatically profiles, cleans, validates, and optimizes tabular datasets with a single line of code, designed to prepare datasets for downstream analytics and machine learning workflows.
 
 ---
 
-## 3. Why Tidely Exists
+## 3. Installation & Compatibility
+
+To install Tidely, use `pip`:
+
+```bash
+pip install tidely
+```
+
+To upgrade to the latest stable version:
+
+```bash
+pip install -U tidely
+```
+
+### Python Support
+Tidely is tested and fully compatible with the following Python versions:
+*   ✅ **Python 3.12**
+*   ✅ **Python 3.13**
+*   ✅ **Python 3.14**
+
+---
+
+## 4. Quick Start
+
+Clean and export any tabular dataset with three lines of Python:
+
+```python
+import tidely as td
+
+# Automatically detect, profile, and clean a dataset
+result = td.clean("dirty_data.csv")
+
+# Print an explainable summary of all applied fixes
+print(result.summary())
+
+# Export the clean dataset
+result.export("clean_data.csv")
+```
+
+---
+
+## 5. Why Tidely Exists
 
 In modern machine learning and data engineering, cleaning messy datasets remains the single most time-consuming task. Engineers routinely spend hours writing fragile, repetitive scripts to fix missing values, coerce types, remove duplicates, and standardize semantic structures.
 
-These tasks lead to bloated codebases, silent data bugs, and massive memory overhead. Tidely exists to eliminate this friction by acting as an intelligent, deterministic cleaning scheduler that infers column types, corrects data anomalies, downcasts boundaries, and guarantees zero loss of valid information out of the box.
+These tasks lead to bloated codebases, silent data bugs, and massive memory overhead. Tidely exists to eliminate this friction by acting as an intelligent, deterministic cleaning scheduler that infers column types, corrects data anomalies, downcasts boundaries, and is designed to preserve valid information while applying deterministic cleaning rules.
 
 ---
 
-## 4. Before Tidely vs. After Tidely
+## 6. Before Tidely vs. After Tidely
 
 ### Manual Preprocessing Script (45+ Lines of Pandas)
 ```python
@@ -97,7 +138,7 @@ cleaned_df = td.clean("dirty_data.csv").df
 
 ---
 
-## 5. Real Cleaning Example
+## 7. Real Cleaning Example
 
 ### Before Cleaning
 | id | email | join_date | salary | Latitude | Zip |
@@ -123,7 +164,7 @@ cleaned_df = td.clean("dirty_data.csv").df
 
 ---
 
-## 6. Features
+## 8. Features
 
 Tidely's capabilities are divided into four core categories:
 
@@ -134,7 +175,7 @@ Tidely's capabilities are divided into four core categories:
 
 ---
 
-## 7. What Tidely Cleans
+## 9. What Tidely Cleans
 
 | Cleaning Task | Supported | Partial | Planned |
 | :--- | :---: | :---: | :---: |
@@ -157,7 +198,7 @@ Tidely's capabilities are divided into four core categories:
 
 ---
 
-## 8. Supported Formats
+## 10. Supported Formats
 
 | Format Extension | Reader Engine | Memory Mode | Native Integration |
 | :--- | :--- | :--- | :--- |
@@ -170,7 +211,7 @@ Tidely's capabilities are divided into four core categories:
 
 ---
 
-## 9. How Tidely Works
+## 11. How Tidely Works
 
 The flowchart below demonstrates the execution path from raw data input to production-ready output:
 
@@ -189,7 +230,7 @@ graph TD
 
 ---
 
-## 10. Automatic Backend Selection
+## 12. Automatic Backend Selection
 
 Tidely dynamically routes datasets depending on their file size and host system resources to prevent Out-Of-Memory (OOM) crashes:
 
@@ -207,7 +248,7 @@ graph TD
 
 ---
 
-## 11. Architecture
+## 13. Architecture
 
 Tidely consists of the following core modules:
 * `adapter.py`: Standardizes input loading and estimates file size before loading to memory.
@@ -222,7 +263,7 @@ Tidely consists of the following core modules:
 
 ---
 
-## 12. Performance Benchmarks
+## 14. Performance Benchmarks
 
 ### Environment Specifications
 * **CPU**: Intel i5-13420H (8 Cores, 12 threads @ 3.4GHz)
@@ -251,17 +292,17 @@ Tidely consists of the following core modules:
 
 ---
 
-## 13. Technical Validation Campaign
+## 15. Technical Validation Campaign
 
-To guarantee production safety, Tidely v1.4.0 was audited against a rigorous technical validation suite:
+To guarantee production safety, Tidely v1.4.1 was audited against a rigorous technical validation suite:
 * **Fuzz & Edge-Case Testing**: Validated against corrupted encodings, duplicate headers, missing headers, scientific notation, and timezone anomalies.
 * **System Testing**: 100% test coverage verified across all 16 Campaign datasets, including large stress tests up to 10,000,000 rows.
 * **Code Audits**: Checked for type safety ( strict MyPy compliance) and formatting style rules (Ruff check).
-* **Validation Outcome**: All **29 pytest regression tests passed successfully**.
+* **Validation Outcome**: All **55 automated tests passed** successfully against Python 3.14 with **0 MyPy issues** and **0 Ruff violations**.
 
 ---
 
-## 14. Ecosystem Comparison
+## 16. Ecosystem Comparison
 
 Tidely complements, rather than replaces, existing data quality and processing packages:
 
@@ -276,7 +317,7 @@ Tidely complements, rather than replaces, existing data quality and processing p
 
 ---
 
-## 15. Cleaning Workflow Comparison
+## 17. Cleaning Workflow Comparison
 
 Comparison of manual script maintenance against Tidely's automated cleaner on `y_amazon-google-large.csv`:
 
@@ -293,7 +334,7 @@ Comparison of manual script maintenance against Tidely's automated cleaner on `y
 
 ---
 
-## 16. Technical Validation Report
+## 18. Technical Validation Report
 
 A summary of findings from our campaign audits:
 * **No Unintended Data Corruption**: No unintended data corruption was observed across the evaluated datasets.
@@ -302,7 +343,7 @@ A summary of findings from our campaign audits:
 
 ---
 
-## 17. Reports & CLI Outputs
+## 19. Reports & CLI Outputs
 
 Tidely generates rich visual interfaces:
 
@@ -337,7 +378,7 @@ latitude  ➔ Inferred Lat    (2 outlier values)
 
 ---
 
-## 18. API Usage
+## 20. API Usage
 
 ### Python API
 ```python
@@ -364,19 +405,19 @@ result.export("report.html")
 
 ### Command Line Interface
 ```bash
-# Clean a CSV file out-of-core
+# Clean a CSV file and save output
 tidely clean input.csv --out clean.csv
 
-# Inspect ARFF file schema
-tidely inspect input.arff
+# Inspect dataset structure and trust score
+tidely inspect input.csv
 
-# Generate HTML report
+# Generate HTML quality report
 tidely report input.csv --out report.html
 ```
 
 ---
 
-## 19. FAQ
+## 21. FAQ
 
 #### Does Tidely replace Pandas or Polars?
 No. Tidely is a data preparation layer. It automatically sanitizes datasets and returns standard dataframes to be loaded directly into Pandas, Polars, or Scikit-learn.
@@ -395,15 +436,16 @@ Yes. Tidely runs as a standard python package, making it easy to drop into any E
 
 ---
 
-## 20. Version Roadmap
+## 22. Version Roadmap
 
-* **v1.3 (Previous Release)**: Native ARFF parser, DNA protection rules, Polars fallback.
-* **v1.4 (Current Release)**: DuckDB SQL query compiler, out-of-core streaming, resources-aware selection.
+* **v1.4.1 (Current Stable)**: Stability patch — test suite fixes, documentation accuracy, regression tests.
+* **v1.4.0**: DuckDB SQL query compiler, out-of-core streaming, resources-aware selection.
+* **v1.3**: Native ARFF parser, DNA protection rules, Polars fallback.
 * **v2.0 (Planned)**: Deep Learning semantic models, timezone alignment.
 
 ---
 
-## 21. Contributing
+## 23. Contributing
 
 1. Fork the repo and set up development dependencies:
    ```bash
@@ -421,7 +463,7 @@ Yes. Tidely runs as a standard python package, making it easy to drop into any E
 
 ---
 
-## 22. License
+## 24. License
 
 Tidely is released under the [MIT License](LICENSE).
 

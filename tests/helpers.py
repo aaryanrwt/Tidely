@@ -1,24 +1,24 @@
 import os
 import pathlib
-import time
-import json
-import psutil
 import subprocess
 import sys
-import traceback
-from typing import Any, Tuple
+import time
+from typing import Any
 
 
 def load_dataset(path: str) -> Any:
     """Load a dataset using Tidely's clean API and return the CleanResult.
+
     This helper is used by many tests to abstract the common pattern.
     """
     import tidely as td
+
     return td.clean(path)
 
 
 def metric_counts(df) -> dict:
     """Return a dictionary of basic quality metrics for a DataFrame.
+
     Supports both Polars and pandas DataFrames.
     """
     if hasattr(df, "shape"):
@@ -45,15 +45,25 @@ def metric_counts(df) -> dict:
     }
 
 
-def capture_performance(func, *args, **kwargs) -> Tuple[Any, dict]:
-    """Run ``func`` and return its result plus a dict with timing and memory usage.
-    """
-    process = psutil.Process(os.getpid())
-    start_mem = process.memory_info().rss
+def capture_performance(func, *args, **kwargs) -> tuple[Any, dict]:
+    """Run ``func`` and return its result plus a dict with timing and memory usage."""
+    try:
+        import psutil
+
+        process = psutil.Process(os.getpid())
+        start_mem = process.memory_info().rss
+    except ImportError:
+        start_mem = 0
     start = time.time()
     result = func(*args, **kwargs)
     end = time.time()
-    end_mem = process.memory_info().rss
+    try:
+        import psutil
+
+        process = psutil.Process(os.getpid())
+        end_mem = process.memory_info().rss
+    except ImportError:
+        end_mem = 0
     return result, {
         "exec_time_s": end - start,
         "peak_mem_mb": (end_mem - start_mem) / (1024 * 1024),
@@ -62,13 +72,13 @@ def capture_performance(func, *args, **kwargs) -> Tuple[Any, dict]:
 
 def run_cli(command: list, cwd: str = None) -> dict:
     """Run a Tidely CLI command and capture exit code, stdout, stderr.
+
     Returns a dict with keys: returncode, stdout, stderr.
     """
-    # On Windows the console script "tidely" may not be directly executable in the venv.
-    # Fallback to invoking the module entry point via python -m if needed.
+    # Use sys.executable for reliable cross-platform execution
     if command and command[0] == "tidely":
-        command = [".\\cert_env\\Scripts\\python", "-m", "tidely.cli.main"] + command[1:]
-    result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
+        command = [sys.executable, "-m", "tidely.cli.main"] + command[1:]
+    result = subprocess.run(command, cwd=cwd, capture_output=True, encoding="utf-8")
     return {
         "returncode": result.returncode,
         "stdout": result.stdout,
@@ -76,8 +86,19 @@ def run_cli(command: list, cwd: str = None) -> dict:
     }
 
 
+def assert_success(result: dict, cmd_desc: str):
+    """Assert that a CLI command completed successfully."""
+    if result["returncode"] != 0:
+        raise AssertionError(
+            f"CLI command failed ({cmd_desc}). Return code {result['returncode']}\n"
+            f"stdout:\n{result['stdout']}\n"
+            f"stderr:\n{result['stderr']}"
+        )
+
+
 def read_readme_snippets() -> list:
     """Extract all Python code blocks from README.md.
+
     Returns a list of (source, code) tuples where ``source`` is the surrounding
     markdown heading for debugging.
     """

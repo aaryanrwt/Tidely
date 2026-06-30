@@ -140,14 +140,9 @@ class StreamingEngine:
         ext = os.path.splitext(filepath)[1].lower()
 
         if ext == ".csv":
-            reader = pl.read_csv_batched(filepath, batch_size=chunk_size)
+            lf = pl.scan_csv(filepath)
             first = True
-            while True:
-                batches = reader.next_batches(1)
-                if not batches:
-                    break
-                chunk_df = batches[0]
-
+            for chunk_df in lf.collect_batches(chunk_size=chunk_size):
                 # Run plan on chunk
                 for action in plan_obj.actions:
                     try:

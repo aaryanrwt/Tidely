@@ -30,7 +30,10 @@ def run_pipeline(data: Any) -> CleanResult:
         CleanResult: The outcome object containing the cleaned DataFrame.
     """
     # 1. Deduplicate column names if pandas to prevent downstream crashes
-    import pandas as pd
+    try:
+        import pandas as pd
+    except ImportError:
+        pd = None
 
     from tidely.core.decision_engine import DecisionEngine
     from tidely.core.detector import DetectionEngine
@@ -42,7 +45,7 @@ def run_pipeline(data: Any) -> CleanResult:
     from tidely.core.summary import CleanSummary
     from tidely.core.tracker import OutcomeTracker
 
-    if isinstance(data, pd.DataFrame) and data.columns.has_duplicates:
+    if pd is not None and isinstance(data, pd.DataFrame) and data.columns.has_duplicates:
         data = data.copy()
         new_cols = []
         seen = set()
@@ -229,7 +232,7 @@ def run_pipeline(data: Any) -> CleanResult:
     )
 
     # Convert raw cleaned dataframe to original incoming format
-    if format_name == "pandas" and not isinstance(cleaned_df_raw, pd.DataFrame):
+    if pd is not None and format_name == "pandas" and not isinstance(cleaned_df_raw, pd.DataFrame):
         if isinstance(cleaned_df_raw, pl.LazyFrame):
             cleaned_df_out = cleaned_df_raw.collect().to_pandas()
         else:

@@ -16,6 +16,29 @@ app = typer.Typer(
 console = Console()
 
 
+def version_callback(value: bool) -> None:
+    """Callback to print the version of Tidely."""
+    if value:
+        import tidely as td
+        typer.echo(f"Tidely version: {td.__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def main(
+    version: bool | None = typer.Option(
+        None,
+        "--version",
+        "-v",
+        callback=version_callback,
+        is_eager=True,
+        help="Show the version and exit.",
+    ),
+) -> None:
+    """Tidely: The Intelligent Data Cleaning Engine."""
+    pass
+
+
 @app.command()
 def clean(
     input_file: str = typer.Argument(

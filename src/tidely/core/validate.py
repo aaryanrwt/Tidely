@@ -16,9 +16,12 @@ def validate_schema(df: Any, schema: dict[str, Any]) -> bool:
     Raises:
         TidelyError: If the schema validation fails.
     """
-    import pandas as pd
+    try:
+        import pandas as pd
+    except ImportError:
+        pd = None
 
-    if not isinstance(df, pd.DataFrame):
+    if pd is None or not isinstance(df, pd.DataFrame):
         # Support for Polars or other structures can be added
         return True
 

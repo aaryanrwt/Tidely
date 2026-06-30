@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-07-01
+
+### Fixed
+- **Packaging**: Fixed package behavior in fresh virtual environments where `pandas` was not installed — converted all hard imports of `pandas` inside `engine.py` and `validate.py` to graceful optional imports.
+- **Test Suite**: Fixed `ImportError` in `test_cli.py` — removed import of non-existent `assert_success` from helpers.
+- **Test Suite**: Fixed `NameError` in `test_cli.py` — `cleaned_path` was referenced before assignment.
+- **Test Suite**: Fixed hardcoded virtual environment path in `helpers.py` — now uses `sys.executable` for cross-platform reliability.
+- **CleanResult**: Removed duplicated `__init__` body that redundantly assigned all attributes twice.
+- **CleanResult**: Corrected `.export()` docstring that incorrectly claimed PDF support.
+- **README**: Fixed CLI examples that referenced non-existent `summary` and `export` commands — updated to match actual CLI (`clean`, `inspect`, `report`).
+
+### Added
+- Regression test suite (`test_regression_v141.py`) covering file-path API, CleanResult structure, Excel loading, DuckDB routing, empty DataFrames, and version consistency.
+- `openpyxl` and `fastexcel` as optional dependencies for Excel file support.
+
+### Improved
+- Test helpers now gracefully handle missing `psutil` dependency.
+- CLI tests split into focused, independent test functions for better failure isolation.
+
 ## [1.4.0] - 2026-06-30
 
 ### Added

@@ -29,23 +29,11 @@ class CleanResult:
         self._original_df = original_df
         self._summary_text = summary_text
         self.report = report_data
-        """Initializes the Result object.
-
-        Args:
-            cleaned_df: The production-ready DataFrame.
-            original_df: A copy of the original DataFrame before cleaning.
-            summary_text: The beautiful terminal output string.
-            report_data: Programmatic dictionary of what changed.
-        """
-        self.df = cleaned_df
-        self._original_df = original_df
-        self._summary_text = summary_text
-        self.report = report_data
 
     def export(self, filepath: str) -> None:
         """Exports the cleaned dataset or report based on the file extension.
 
-        Supported extensions: .csv, .parquet, .html, .pdf
+        Supported extensions: .csv, .parquet, .html
         """
         ext = filepath.split(".")[-1].lower()
         if ext in ("csv", "parquet"):

@@ -1,4 +1,4 @@
-"""Public API for Tidely v1.0."""
+"""Public API for Tidely."""
 
 from typing import Any
 
