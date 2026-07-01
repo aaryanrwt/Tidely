@@ -36,10 +36,7 @@ class CleanResult:
         Supported extensions: .csv, .parquet, .html
         """
         ext = filepath.split(".")[-1].lower()
-        if ext in ("csv", "parquet"):
-            from tidely.api import save
-            save(self.df, filepath)
-        elif ext == "html":
+        if ext == "html":
             report = self.report
             col_diag = report.get("column_diagnostics", {})
             fixes = report.get("fixes", [])
@@ -327,11 +324,67 @@ class CleanResult:
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(html_content)
         else:
-            raise ValueError(f"Unsupported export format: {ext}")
+            from tidely.api import save
+            save(self.df, filepath)
 
     def summary(self) -> str:
         """Returns the outcome-focused cleaning summary."""
         return self._summary_text
+
+    @property
+    def health_before(self) -> int:
+        """Returns the dataset quality health score before cleaning."""
+        return int(self.report.get("initial_health", 0))
+
+    @property
+    def health_after(self) -> int:
+        """Returns the dataset quality health score after cleaning."""
+        return int(self.report.get("final_health", 0))
+
+    @property
+    def execution_time(self) -> float:
+        """Returns the cleaning pipeline execution duration in seconds."""
+        return float(self.report.get("execution_time", 0.0))
+
+    @property
+    def memory_before(self) -> float:
+        """Returns the estimated dataset memory footprint in MB before cleaning."""
+        return float(self.report.get("memory_before_mb", 0.0))
+
+    @property
+    def memory_after(self) -> float:
+        """Returns the estimated dataset memory footprint in MB after cleaning."""
+        return float(self.report.get("memory_after_mb", 0.0))
+
+    @property
+    def memory_saved(self) -> float:
+        """Returns the estimated dataset memory saved in MB after downcasting."""
+        return max(0.0, self.memory_before - self.memory_after)
+
+    @property
+    def backend(self) -> str:
+        """Returns the name of the cleaning backend used (e.g. polars_eager, duckdb)."""
+        return str(self.report.get("engine_name", "polars_eager"))
+
+    @property
+    def rows_removed(self) -> int:
+        """Returns the number of duplicate rows removed during cleaning."""
+        return int(self.report.get("rows_removed", 0))
+
+    @property
+    def columns_modified(self) -> int:
+        """Returns the number of columns corrected or optimized."""
+        return int(self.report.get("columns_modified", 0))
+
+    @property
+    def actions(self) -> list[dict[str, Any]]:
+        """Returns the list of all applied repair actions and explanations."""
+        return list(self.report.get("actions", []))
+
+    @property
+    def version(self) -> str:
+        """Returns the version of Tidely used."""
+        return "1.4.2"
 
     def undo(self) -> Any:
         """Reverts the cleaning operation, returning the original DataFrame."""

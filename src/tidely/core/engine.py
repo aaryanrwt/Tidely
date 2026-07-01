@@ -29,6 +29,9 @@ def run_pipeline(data: Any) -> CleanResult:
     Returns:
         CleanResult: The outcome object containing the cleaned DataFrame.
     """
+    import time
+    start_time = time.time()
+
     # 1. Deduplicate column names if pandas to prevent downstream crashes
     try:
         import pandas as pd
@@ -216,11 +219,31 @@ def run_pipeline(data: Any) -> CleanResult:
                 }
             )
 
+    orig_h = df_initial_for_tracker.height if hasattr(df_initial_for_tracker, "height") else 0
+    clean_h = df_cleaned_for_tracker.height if hasattr(df_cleaned_for_tracker, "height") else 0
+    rows_removed = max(0, orig_h - clean_h)
+    columns_modified = len({action.column for action in p.actions if getattr(action, "column", "")})
+
+    missing_values_fixed = sum(action.rows_affected for action in p.actions if action.category == "Missing Values")
+    duplicates_removed_count = sum(action.rows_affected for action in p.actions if action.category in ("Duplicate IDs", "Duplicate Rows"))
+    outliers_fixed = sum(action.rows_affected for action in p.actions if action.category == "Outliers")
+    datatypes_optimized = sum(1 for action in p.actions if action.category in ("Datatype Optimization", "Categorical", "Smart Categorical"))
+    semantic_corrections = sum(1 for action in p.actions if action.category in ("Email", "Phone", "ZIP Code", "Coordinate Clip", "Smart String", "Smart Numeric", "Smart Date"))
+
     outcome = tracker.track(df_cleaned_for_tracker, autofixes, warnings)
     outcome["final_health"] = trust_final.overall
     outcome["column_diagnostics"] = getattr(p, "column_diagnostics", {})
     outcome["engine_name"] = engine_name
     outcome["engine_reason"] = decision_engine.selected_reason
+    outcome["execution_time"] = time.time() - start_time
+    outcome["rows_removed"] = rows_removed
+    outcome["columns_modified"] = columns_modified
+    outcome["missing_values_fixed"] = missing_values_fixed
+    outcome["duplicates_removed_count"] = duplicates_removed_count
+    outcome["outliers_fixed"] = outliers_fixed
+    outcome["datatypes_optimized"] = datatypes_optimized
+    outcome["semantic_corrections"] = semantic_corrections
+    outcome["actions"] = autofixes
 
     summary = CleanSummary(
         initial_health=outcome["initial_health"],
@@ -229,6 +252,14 @@ def run_pipeline(data: Any) -> CleanResult:
         warnings=outcome["warnings"],
         memory_before_mb=outcome["memory_before_mb"],
         memory_after_mb=outcome["memory_after_mb"],
+        execution_time=outcome["execution_time"],
+        backend=outcome["engine_name"],
+        rows_removed=outcome["rows_removed"],
+        missing_values_fixed=outcome["missing_values_fixed"],
+        duplicates_removed=outcome["duplicates_removed_count"],
+        outliers_fixed=outcome["outliers_fixed"],
+        datatypes_optimized=outcome["datatypes_optimized"],
+        semantic_corrections=outcome["semantic_corrections"],
     )
 
     # Convert raw cleaned dataframe to original incoming format

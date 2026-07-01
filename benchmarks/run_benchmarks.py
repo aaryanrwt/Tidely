@@ -2,7 +2,10 @@ import os
 import time
 
 # Great Expectations
-import great_expectations as gx
+try:
+    import great_expectations as gx
+except ImportError:
+    gx = None
 
 # Janitor
 try:
@@ -204,23 +207,20 @@ if __name__ == "__main__":
 
     print("=" * 50)
 
-    print("\n")
-    print("🚀 BENCHMARK RESULTS")
+    print("\nBENCHMARK RESULTS")
     print("=" * 90)
     print(
         f"{'Framework':<20} | {'Latency (ms)':<15} | {'RAM Overhead (MB)':<20} | {'Lines of Code':<15}"
     )
     print("-" * 90)
-    print(
-        f"{'Tidely':<20} | {tidely_time * 1000:<15.0f} | {tidely_mem:<20.1f} | {'1':<15}"
-    )
-    print(
-        f"{'PyJanitor':<20} | {janitor_time * 1000:<15.0f} | {janitor_mem:<20.1f} | {'8':<15}"
-    )
-    print(
-        f"{'Pandera':<20} | {pandera_time * 1000:<15.0f} | {pandera_mem:<20.1f} | {'25':<15}"
-    )
-    print(
-        f"{'Great Expectations':<20} | {gx_time * 1000:<15.0f} | {gx_mem:<20.1f} | {'40+':<15}"
-    )
+    
+    def print_framework_row(name, t, m, loc):
+        t_str = f"{t * 1000:<15.0f}" if t is not None else f"{'N/A':<15}"
+        m_str = f"{m:<20.1f}" if m is not None else f"{'N/A':<20}"
+        print(f"{name:<20} | {t_str} | {m_str} | {loc:<15}")
+
+    print_framework_row("Tidely", tidely_time, tidely_mem, "1")
+    print_framework_row("PyJanitor", janitor_time, janitor_mem, "8")
+    print_framework_row("Pandera", pandera_time, pandera_mem, "25")
+    print_framework_row("Great Expectations", gx_time, gx_mem, "40+")
     print("=" * 90)

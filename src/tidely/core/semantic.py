@@ -18,7 +18,7 @@ class SemanticEngine:
             "URL": re.compile(
                 r"^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$"
             ),
-            "Phone": re.compile(r"^\+?[\d\s\-\(\)]{7,20}$"),
+            "Phone": re.compile(r"^\+?1?\s*\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$"),
             "Currency": re.compile(r"^[\$\€\£\¥]\s*\d+([,\.]\d+)?$"),
             "Boolean": re.compile(r"^(yes|no|true|false|t|f|y|n|0|1)$", re.IGNORECASE),
             "UUID": re.compile(
@@ -44,6 +44,8 @@ class SemanticEngine:
             "Salary": re.compile(r"^[\$\€\£\¥]?\s*\d{3,10}(?:[,\.]\d{2})?$"),
             "Hash": re.compile(r"^[a-fA-F0-9]{32}$|^[a-fA-F0-9]{40}$|^[a-fA-F0-9]{64}$"),
             "HTML": re.compile(r"<[a-z/][\s\S]*>", re.IGNORECASE),
+            "Date": re.compile(r"^\d{4}[-\/]\d{2}[-\/]\d{2}(?:\s+\d{2}:\d{2}:\d{2})?$|^\d{2}[-\/]\d{2}[-\/]\d{4}$"),
+            "Vehicle ID": re.compile(r"^[A-HJ-NPR-Z0-9]{17}$", re.IGNORECASE),
         }
 
     def infer(self, df: Any, metadata: dict[str, Any]) -> dict[str, Any]:
@@ -134,8 +136,11 @@ class SemanticEngine:
                             if isinstance(val, str) and pattern.match(str(val).strip())
                         )
                         pattern_rates[p_name] = matches / len(sample_list)
-
-                    best_match = max(pattern_rates, key=lambda k: pattern_rates[k])
+                    # If Date and Phone both match, prefer Date to avoid YYYY-MM-DD to Phone mapping
+                    if pattern_rates.get("Date", 0.0) >= 0.5 and pattern_rates.get("Phone", 0.0) == pattern_rates.get("Date", 0.0):
+                        best_match = "Date"
+                    else:
+                        best_match = max(pattern_rates, key=lambda k: pattern_rates[k])
                     best_rate = pattern_rates[best_match]
 
                     if best_rate >= 0.5:
@@ -203,10 +208,19 @@ class SemanticEngine:
                         elif best_match == "HTML":
                             recommended_cleaning = "Strip markup/HTML tags to plain text"
                             risk_score = 0.2
+                        elif best_match == "Date":
+                            recommended_cleaning = "Convert to standard UTC ISO8601 Datetime"
+                            risk_score = 0.0
+                        elif best_match == "Vehicle ID":
+                            recommended_cleaning = "Standardize VIN characters"
+                            risk_score = 0.0
                     else:
                         # Fallback heuristic rules
+                        import re
+                        col_words = set(re.split(r"[_ \-]", col_lower))
+
                         if "address" in col_lower or any(
-                            kw in col_lower
+                            (kw in col_words if len(kw) <= 3 else kw in col_lower)
                             for kw in (
                                 "street",
                                 "road",
@@ -224,18 +238,32 @@ class SemanticEngine:
                             "name" in col_lower
                             or "first" in col_lower
                             or "last" in col_lower
+                            or "owner" in col_lower
+                            or "contact" in col_lower
                         ):
                             inferred_type = "Name"
-                            confidence = 0.7
+                            confidence = 0.8
                             recommended_cleaning = "Titlecase names"
-                        elif "country" in col_lower:
+                        elif "country" in col_lower or "nation" in col_lower:
                             inferred_type = "Country"
                             confidence = 0.8
                             recommended_cleaning = "Convert to ISO country names/codes"
-                        elif "city" in col_lower:
+                        elif "city" in col_lower or "town" in col_lower or "municipality" in col_lower:
                             inferred_type = "City"
                             confidence = 0.8
                             recommended_cleaning = "Normalize city capitalization"
+                        elif "customer" in col_lower and ("id" in col_words or "key" in col_words or "code" in col_words):
+                            inferred_type = "CustomerID"
+                            confidence = 0.9
+                            recommended_cleaning = "Enforce uppercase ID formatting"
+                        elif "invoice" in col_lower and ("id" in col_words or "key" in col_words or "code" in col_words):
+                            inferred_type = "InvoiceID"
+                            confidence = 0.9
+                            recommended_cleaning = "Enforce uppercase ID formatting"
+                        elif ("product" in col_lower or "item" in col_lower or "sku" in col_lower) and ("id" in col_words or "key" in col_words or "code" in col_words or "sku" in col_lower):
+                            inferred_type = "ProductID"
+                            confidence = 0.9
+                            recommended_cleaning = "Enforce SKU alphanumeric pattern"
                         elif unique_ratio < 0.05:
                             inferred_type = "Categorical"
                             confidence = 0.9

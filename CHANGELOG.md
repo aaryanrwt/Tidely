@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-07-01
+
+### Fixed
+- **Decompression**: Fixed Excel files (.xlsx) being double-decompressed as zip archives in the raw bytes parser.
+- **Streams**: Added automatic `seek(0)` resets when reading from file-like objects to ensure streams can be reused by routing backends.
+- **Semantic Classification**: Refined semantic keyword matching to check word boundaries (e.g. `"st"` no longer incorrectly flags `"first_name"` or `"last_name"` as Addresses).
+- **Warnings**: Suppressed NumPy divide-by-zero runtime warnings in the correlation matrix calculation for constant columns.
+
+### Added
+- **Universal Export Engine**: Added direct support for 15+ export extensions (including TSV, Excel, ODS, Parquet, Feather, JSON, JSONL, XML, YAML, ARFF, DuckDB, SQLite).
+- **Universal Ingestion**: Integrated support for decompressing zip, gzip, bz2, and xz files, database connection objects, and custom formats.
+- **Advanced Semantics**: Added Name, City, Country, VIN, Customer ID, Invoice ID, and Product ID classifiers.
+- **Readiness API**: Exposed execution metrics directly on `CleanResult` as properties, and added ML/Business readiness assessments to `CleanSummary`.
+- **CI Matrix**: Configured cross-platform matrix testing on Windows, macOS, and Linux.
+
 ## [1.4.1] - 2026-07-01
 
 ### Fixed
@@ -14,8 +29,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **CleanResult**: Removed duplicated `__init__` body that redundantly assigned all attributes twice.
 - **CleanResult**: Corrected `.export()` docstring that incorrectly claimed PDF support.
 - **README**: Fixed CLI examples that referenced non-existent `summary` and `export` commands — updated to match actual CLI (`clean`, `inspect`, `report`).
+- **Semantic Classification**: Fixed the "st" name-to-address boundary bug and added a Phone/Date tie-breaker.
+- **Warnings**: Suppressed NumPy runtime warnings in the correlation matrix calculation for columns with constant null values.
 
 ### Added
+- **Universal Export Engine**: Added direct support for 15+ export extensions (including TSV, Excel, ODS, Parquet, Feather, JSON, JSONL, XML, YAML, ARFF, DuckDB, SQLite).
+- **Universal & Intelligent Loader**: Integrated support for decompressing zip, gzip, bz2, and xz files, reading SQLite and DuckDB connection objects, and custom formats (ARFF, XML, ODS, Pickle).
+- **Semantic Intelligence**: Enhanced rules for Name, City, Country, Phone/Date tie-breaking, VIN (Vehicle ID), Customer ID, Invoice ID, and Product ID.
+- **Readiness Summary & Metadata API**: Exposed execution time, rows removed, modified columns, memory saved, and backend name on `CleanResult` as properties, and added ML/Business readiness assessments to `CleanSummary`.
 - Regression test suite (`test_regression_v141.py`) covering file-path API, CleanResult structure, Excel loading, DuckDB routing, empty DataFrames, and version consistency.
 - `openpyxl` and `fastexcel` as optional dependencies for Excel file support.
 

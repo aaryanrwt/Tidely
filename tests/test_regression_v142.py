@@ -1,6 +1,6 @@
-"""Regression tests for Tidely v1.4.1 patch release.
+"""Regression tests for Tidely v1.4.2 release.
 
-These tests guard against every bug fixed in v1.4.1 and verify
+These tests guard against every bug fixed in v1.4.2 and verify
 core advertised functionality.
 """
 
@@ -195,9 +195,9 @@ def test_clean_all_nulls():
 # 6. Version consistency
 # ---------------------------------------------------------------------------
 
-def test_version_is_1_4_1():
+def test_version_is_1_4_2():
     """__version__ matches the expected release version."""
-    assert td.__version__ == "1.4.1"
+    assert td.__version__ == "1.4.2"
 
 
 def test_version_matches_pyproject():
@@ -234,3 +234,128 @@ def test_clean_polars_dataframe():
     result = td.clean(df)
     assert isinstance(result, CleanResult)
     assert len(result.df) == 3
+
+
+# ---------------------------------------------------------------------------
+# 9. Extended Exporter and Loader E2E tests
+# ---------------------------------------------------------------------------
+
+def test_clean_result_extended_metadata(tmp_path):
+    """Exposes all new CleanResult properties and formats them in the summary."""
+    df = pl.DataFrame({
+        "customer_id": ["C001", "C002", "C001"],
+        "name": ["Alice", "Bob", "Alice"],
+        "subscription_date": ["2026-06-30", "2026-07-01", "2026-06-30"]
+    })
+    result = td.clean(df)
+    assert isinstance(result.health_before, int)
+    assert isinstance(result.health_after, int)
+    assert isinstance(result.execution_time, float)
+    assert isinstance(result.memory_before, float)
+    assert isinstance(result.memory_after, float)
+    assert isinstance(result.memory_saved, float)
+    assert isinstance(result.backend, str)
+    assert isinstance(result.rows_removed, int)
+    assert isinstance(result.columns_modified, int)
+    assert isinstance(result.actions, list)
+    assert result.version == "1.4.2"
+
+    summary = result.summary()
+    assert "TIDELY CLEANING SUMMARY" in summary
+    assert "READINESS CERTIFICATION" in summary
+
+
+def test_universal_exporter_formats(tmp_path):
+    """CleanResult.export() supports all 15+ formats (CSV, Excel, ODS, JSON, JSONL, XML, YAML, ARFF, TSV, DuckDB, SQLite)."""
+    df = pl.DataFrame({"x": [1, 2, 3], "y": ["a", "b", "c"]})
+    result = td.clean(df)
+
+    # TSV
+    tsv_path = tmp_path / "data.tsv"
+    result.export(str(tsv_path))
+    assert tsv_path.exists()
+
+    # JSON & JSONL
+    json_path = tmp_path / "data.json"
+    result.export(str(json_path))
+    assert json_path.exists()
+
+    jsonl_path = tmp_path / "data.jsonl"
+    result.export(str(jsonl_path))
+    assert jsonl_path.exists()
+
+    # YAML
+    yaml_path = tmp_path / "data.yaml"
+    result.export(str(yaml_path))
+    assert yaml_path.exists()
+
+    # ARFF
+    arff_path = tmp_path / "data.arff"
+    result.export(str(arff_path))
+    assert arff_path.exists()
+
+    # DuckDB
+    duckdb_path = tmp_path / "data.duckdb"
+    result.export(str(duckdb_path))
+    assert duckdb_path.exists()
+
+    # SQLite
+    sqlite_path = tmp_path / "data.sqlite"
+    result.export(str(sqlite_path))
+    assert sqlite_path.exists()
+
+
+def test_universal_loader_and_intelligent_features(tmp_path):
+    """normalize_to_polars handles compression, file-like objects, active connections, and encodings."""
+    import gzip
+    import io
+    import sqlite3
+    import zipfile
+
+    # BytesIO loader
+    csv_bytes = b"col1,col2\n10,foo\n20,bar\n"
+    stream = io.BytesIO(csv_bytes)
+    result = td.clean(stream)
+    assert len(result.df) == 2
+
+    # gzip compression auto-decompress
+    gz_path = tmp_path / "data.csv.gz"
+    with gzip.open(gz_path, "wb") as f:
+        f.write(csv_bytes)
+    result = td.clean(gz_path)
+    assert len(result.df) == 2
+
+    # zip compression auto-decompress
+    zip_path = tmp_path / "data.zip"
+    with zipfile.ZipFile(zip_path, "w") as z:
+        z.writestr("inner.csv", csv_bytes.decode())
+    result = td.clean(zip_path)
+    assert len(result.df) == 2
+
+    # SQLite Connection loader
+    db_path = tmp_path / "test.db"
+    conn = sqlite3.connect(db_path)
+    conn.execute("CREATE TABLE users (id INT, name TEXT)")
+    conn.execute("INSERT INTO users VALUES (1, 'Alice'), (2, 'Bob')")
+    conn.commit()
+    # clean with active connection
+    result = td.clean(conn)
+    assert len(result.df) == 2
+    conn.close()
+
+
+def test_semantic_intelligence_correctness():
+    """Classifier correctly maps first_name/last_name to Name, dates to Date, and other business items."""
+    df = pl.DataFrame({
+        "first_name": ["Alice", "Bob", "Charlie"],
+        "subscription_date": ["2026-06-30", "2026-07-01", "2026-06-25"],
+        "vin_code": ["1HGCR2F83HA000000", "1HGCR2F83HA111111", "1HGCR2F83HA222222"],
+        "customer_id": ["C1001", "C1002", "C1003"]
+    })
+    # profile semantic types
+    profile = td.inspect(df)
+    sem = profile.semantic_types
+    assert sem["first_name"]["type"] == "Name"
+    assert sem["subscription_date"]["type"] == "Date"
+    assert sem["vin_code"]["type"] == "Vehicle ID"
+    assert sem["customer_id"]["type"] == "CustomerID"

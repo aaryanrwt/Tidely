@@ -240,7 +240,10 @@ class DetectionEngine:
                     sample_len = min(df.height if hasattr(df, "height") else len(df), 5000)
                     if is_pandas:
                         null_df = df[cols_with_nulls].head(sample_len).isna().astype(int)
-                        corr_matrix = null_df.corr()
+                        import warnings
+                        with warnings.catch_warnings():
+                            warnings.filterwarnings("ignore", category=RuntimeWarning)
+                            corr_matrix = null_df.corr()
                         for col in cols_with_nulls:
                             corrs = {}
                             for other in cols_with_nulls:
@@ -252,7 +255,10 @@ class DetectionEngine:
                             metadata["columns"][col]["null_correlations"] = corrs
                     else:
                         null_df = df.head(sample_len).select([pl.col(c).is_null().cast(pl.Int32).alias(c) for c in cols_with_nulls])
-                        corr_matrix = null_df.corr()
+                        import warnings
+                        with warnings.catch_warnings():
+                            warnings.filterwarnings("ignore", category=RuntimeWarning)
+                            corr_matrix = null_df.corr()
                         corr_dict = corr_matrix.to_dict(as_series=False)
                         for i, col in enumerate(cols_with_nulls):
                             corrs = {}

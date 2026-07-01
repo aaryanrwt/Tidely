@@ -1,32 +1,27 @@
-# Tidely v1.4.1 Release Notes
+# Tidely v1.4.2 Release Notes
 
-Tidely v1.4.1 is a stability and correctness patch release. No new features are introduced. All efforts are focused on test reliability, documentation accuracy, and regression prevention.
+Tidely v1.4.2 is a production-hardening release focusing on quality, stability, correctness, and comprehensive pipeline validation.
 
-## 🔧 What's Fixed in v1.4.1
+## 🔧 What's Fixed in v1.4.2
 
-- **Packaging Stability**: Fixed package behavior in fresh virtual environments where `pandas` was not installed. Converted all hard imports of `pandas` inside `engine.py` and `validate.py` to graceful optional imports.
-- **Test Suite Reliability**: Fixed critical import errors and runtime failures in the CLI test module that prevented the full test suite from executing.
-- **CleanResult Constructor**: Removed duplicated `__init__` body that redundantly assigned all attributes twice.
-- **Documentation Accuracy**: Corrected `.export()` docstring that incorrectly claimed PDF support. Fixed CLI examples in README that referenced non-existent commands.
-- **Cross-Platform Tests**: Replaced hardcoded virtual environment paths in test helpers with `sys.executable` for portable execution.
+- **Double Decompression**: Fixed Excel files (.xlsx) being double-decompressed as zip archives in the raw bytes parser.
+- **Stream Cursor Resets**: Added automatic `seek(0)` resets when reading from file-like objects so streams can be reused by routing backends.
+- **Name-to-Address Classification**: Refined semantic keyword matching to check word boundaries (e.g. `"st"` no longer incorrectly flags `"first_name"` or `"last_name"` as Addresses).
+- **Runtime Warnings**: Suppressed NumPy divide-by-zero runtime warnings in the correlation matrix calculation for constant columns.
 
-## ✅ What's New in v1.4.1
+## ✅ What's New in v1.4.2
 
-- **Regression Test Suite**: Added `test_regression_v141.py` covering file-path API, CleanResult structure, Excel loading, DuckDB routing, empty DataFrames, and version consistency.
-- **Excel Dependencies**: Added `openpyxl` and `fastexcel` as optional dependencies for Excel file support.
-- **Verified 2-Line API**: Confirmed that `td.clean("file.csv").df` works correctly across CSV, Excel, TXT, ARFF, and Parquet formats.
-
-## 🚀 Highlights Carried Forward from v1.4.0
-- **Native ARFF Format Support:** Zero-dependency ARFF parser supporting numeric, real, and nominal types.
-- **DNA Semantic Protection:** Semantic nucleotide pattern recognition to protect biological sequences.
-- **Automatic DuckDB Integration:** Out-of-core execution for large CSV/Parquet files.
-- **Engine Auto-Selection:** Dynamic routing between Polars Eager, Polars Lazy, DuckDB, and Streaming.
+- **Universal Export Engine**: Added direct support for 15+ export extensions (including TSV, Excel, ODS, Parquet, Feather, JSON, JSONL, XML, YAML, ARFF, DuckDB, SQLite).
+- **Universal & Intelligent Ingestion**: Integrated support for decompressing zip, gzip, bz2, and xz files, reading database connections, and custom formats.
+- **Advanced Semantic Classifiers**: Added support for Names, Cities, Countries, VINs, Customer IDs, Invoice IDs, and Product IDs.
+- **Readiness Summary & Metadata API**: Exposed execution metrics (time, memory saved, rows removed, backend used) directly on `CleanResult` as properties, and added ML/Business readiness assessments to `CleanSummary`.
+- **Packaging & CI Matrix**: Configured cross-platform matrix testing on Windows, macOS, and Linux, and declared optional packaging dependencies.
 
 ## 📦 Installation
 ```bash
-pip install tidely==1.4.1
+pip install tidely==1.4.2
 ```
 
 ## 📖 Known Limitations & Next Steps
-- Nested JSON flattening is supported, but advanced auto-relational flattening of deeply nested arrays is scheduled for future milestones.
-- Out-of-core streaming for non-CSV/Parquet formats is under active testing.
+- Flat text streams without clear separators default to single-column parses.
+- Out-of-core streaming for JSON/XML formats is under active development.

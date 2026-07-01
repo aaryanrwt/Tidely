@@ -244,9 +244,16 @@ class RepairPlan:
             if rows_before != rows_after:
                 action.rows_affected = abs(rows_before - rows_after)
             else:
-                # If rows are identical in count, assume it was a column level update.
-                # Just mark rows_affected as height of dataframe for now, or track diffs.
-                action.rows_affected = df.height
+                col = getattr(action, "column", "")
+                if col and col in df.columns and col in new_df.columns:
+                    try:
+                        changed = (df[col] != new_df[col]).sum()
+                        null_changed = (df[col].is_null() != new_df[col].is_null()).sum()
+                        action.rows_affected = int(max(changed, null_changed))
+                    except Exception:
+                        action.rows_affected = df.height
+                else:
+                    action.rows_affected = df.height
 
             df = new_df
 

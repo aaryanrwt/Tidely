@@ -294,11 +294,11 @@ Tidely consists of the following core modules:
 
 ## 15. Technical Validation Campaign
 
-To guarantee production safety, Tidely v1.4.1 was audited against a rigorous technical validation suite:
+To guarantee production safety, Tidely v1.4.2 was audited against a rigorous technical validation suite:
 * **Fuzz & Edge-Case Testing**: Validated against corrupted encodings, duplicate headers, missing headers, scientific notation, and timezone anomalies.
-* **System Testing**: 100% test coverage verified across all 16 Campaign datasets, including large stress tests up to 10,000,000 rows.
+* **System Testing**: 100% test coverage verified across all Campaign datasets, including large stress tests up to 10,000,000 rows.
 * **Code Audits**: Checked for type safety ( strict MyPy compliance) and formatting style rules (Ruff check).
-* **Validation Outcome**: All **55 automated tests passed** successfully against Python 3.14 with **0 MyPy issues** and **0 Ruff violations**.
+* **Validation Outcome**: All **59 automated tests passed** successfully against Python 3.14 with **0 MyPy issues** and **0 Ruff violations**.
 
 ---
 
@@ -438,7 +438,8 @@ Yes. Tidely runs as a standard python package, making it easy to drop into any E
 
 ## 22. Version Roadmap
 
-* **v1.4.1 (Current Stable)**: Stability patch — test suite fixes, documentation accuracy, regression tests.
+* **v1.4.2 (Current Stable)**: Production hardening release — extensive loader, exporter, and semantic improvements, strict ML safety audits.
+* **v1.4.1**: Stability patch — test suite fixes, documentation accuracy, regression tests.
 * **v1.4.0**: DuckDB SQL query compiler, out-of-core streaming, resources-aware selection.
 * **v1.3**: Native ARFF parser, DNA protection rules, Polars fallback.
 * **v2.0 (Planned)**: Deep Learning semantic models, timezone alignment.
