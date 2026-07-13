@@ -195,9 +195,9 @@ def test_clean_all_nulls():
 # 6. Version consistency
 # ---------------------------------------------------------------------------
 
-def test_version_is_1_4_2():
+def test_version_is_1_4_3():
     """__version__ matches the expected release version."""
-    assert td.__version__ == "1.4.2"
+    assert td.__version__ == "1.4.3"
 
 
 def test_version_matches_pyproject():
@@ -258,7 +258,7 @@ def test_clean_result_extended_metadata(tmp_path):
     assert isinstance(result.rows_removed, int)
     assert isinstance(result.columns_modified, int)
     assert isinstance(result.actions, list)
-    assert result.version == "1.4.2"
+    assert result.version == "1.4.3"
 
     summary = result.summary()
     assert "TIDELY CLEANING SUMMARY" in summary

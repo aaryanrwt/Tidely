@@ -335,12 +335,139 @@ class SemanticEngine:
                 match_rate = 1.0
                 recommended_cleaning = "Cast to true boolean"
 
+            role = self._infer_role(col, col_meta, sample_list, inferred_type)
             semantics[col] = {
                 "type": inferred_type,
                 "confidence": confidence,
                 "match_rate": match_rate,
                 "risk_score": risk_score,
                 "recommended_cleaning": recommended_cleaning,
+                "role": role,
             }
 
         return semantics
+
+    def _infer_role(self, col: str, col_meta: dict[str, Any], samples: list[Any], inferred_type: str) -> str:
+        col_lower = str(col).strip().lower()
+        col_words = set(re.split(r"[_ \-]", col_lower))
+        dtype = str(col_meta.get("dtype", "")).lower()
+        unique_count = col_meta.get("unique_count", 0)
+        total_count = col_meta.get("total_count", 0)
+        null_count = col_meta.get("null_count", 0)
+        unique_ratio = unique_count / max(total_count - null_count, 1)
+
+        # 1. Target / Label
+        target_names = {"target", "y", "response", "output", "pred", "prediction", "outcome", "target_value", "ground_truth", "survived"}
+        label_names = {"label", "class", "category", "tag", "group"}
+        if col_lower in target_names:
+            return "Target"
+        if col_lower in label_names:
+            return "Label"
+        if "target" in col_lower or "response" in col_lower:
+            return "Target"
+        if "label" in col_lower or "class" in col_lower or "tag" in col_lower:
+            return "Label"
+
+        # 2. UUID / GUID
+        uuid_pattern = re.compile(
+            r"^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[1-5][a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}$"
+        )
+        guid_pattern = re.compile(
+            r"^\{?[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[1-5][a-fA-F0-9]{3}-[89abAB][a-fA-F0-9]{3}-[a-fA-F0-9]{12}\}?$"
+        )
+        uuid_matches = sum(
+            1
+            for val in samples
+            if isinstance(val, str) and uuid_pattern.match(val.strip())
+        )
+        guid_matches = sum(
+            1
+            for val in samples
+            if isinstance(val, str) and guid_pattern.match(val.strip())
+        )
+        if len(samples) > 0:
+            if uuid_matches / len(samples) > 0.8:
+                return "UUID"
+            if guid_matches / len(samples) > 0.8:
+                return "GUID"
+        if "uuid" in col_lower:
+            return "UUID"
+        if "guid" in col_lower:
+            return "GUID"
+        if inferred_type == "UUID":
+            return "UUID"
+
+        # Check for nested/composite type representation
+        raw_dtype = col_meta.get("dtype")
+        is_composite = False
+        if raw_dtype is not None:
+            dtype_str = str(raw_dtype)
+            if any(dtype_str.startswith(prefix) for prefix in ("Struct", "List", "Array", "Object", "Unknown")):
+                is_composite = True
+
+        # 3. Index
+        is_integer = any(t in dtype for t in ("int", "uint", "long")) and not is_composite
+        if is_integer and unique_count == total_count and null_count == 0 and total_count > 0:
+            try:
+                sorted_vals = sorted([int(x) for x in samples if x is not None])
+                if len(sorted_vals) > 1:
+                    diffs = [sorted_vals[i+1] - sorted_vals[i] for i in range(len(sorted_vals)-1)]
+                    if all(d == 1 for d in diffs) and (sorted_vals[0] == 0 or sorted_vals[0] == 1):
+                        return "Index"
+            except Exception:
+                pass
+        if col_lower in ("index", "idx", "row_num", "rownum", "row_id", "rowid"):
+            return "Index"
+
+        # 4. Primary Key
+        if unique_count == total_count and null_count == 0:
+            if col_lower == "id" or col_lower.endswith("_id") or col_lower.endswith("_key") or col_lower.endswith("_pk") or col_lower.startswith("id_"):
+                return "Primary Key"
+            if "id" in col_lower or "key" in col_lower or "code" in col_lower:
+                return "Primary Key"
+
+        # 5. Foreign Key
+        if col_lower.endswith("_id") or col_lower.endswith("_key") or col_lower.endswith("_fk") or col_lower.startswith("id_"):
+            if unique_count < total_count:
+                return "Foreign Key"
+
+        # 6. Boolean
+        if "bool" in dtype:
+            return "Boolean"
+        if 1 <= unique_count <= 2:
+            boolean_vals = {str(val).strip().lower() for val in samples}
+            boolean_mappings = {"true", "false", "yes", "no", "y", "n", "t", "f", "1", "0", "1.0", "0.0"}
+            if boolean_vals.issubset(boolean_mappings):
+                return "Boolean"
+        if inferred_type == "Boolean":
+            return "Boolean"
+
+        # 7. Datetime
+        if any(t in dtype for t in ("date", "time", "timestamp")):
+            return "Datetime"
+        if inferred_type in ("Date", "Datetime") or "date" in col_lower or "time" in col_lower or "timestamp" in col_lower or "created_at" in col_lower or "updated_at" in col_lower:
+            return "Datetime"
+
+        # 8. Identifier
+        id_indicators = {"id", "code", "num", "no", "number", "serial", "account", "user", "session", "token", "hash", "email", "phone", "ip", "url", "ssn", "cc", "vin", "sku", "key", "pk", "fk"}
+        if col_words.intersection(id_indicators):
+            return "Identifier"
+        if inferred_type in ("CustomerID", "InvoiceID", "ProductID", "SKU", "Email", "Phone", "ZIP Code", "SSN", "Credit Card", "IBAN", "Vehicle ID", "Hash", "IP Address", "URL"):
+            return "Identifier"
+
+        # 9. Categorical Integer
+        if is_integer:
+            if unique_count <= 20 or unique_ratio < 0.05:
+                return "Categorical Integer"
+
+        # 10. Continuous Numeric
+        is_numeric = any(t in dtype for t in ("int", "uint", "long", "float", "double", "decimal", "real")) and not is_composite
+        if is_numeric:
+            return "Continuous Numeric"
+
+        # 11. Text
+        if any(t in dtype for t in ("str", "string", "object", "utf8")):
+            return "Text"
+
+        return "Text"
+

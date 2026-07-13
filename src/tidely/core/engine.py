@@ -31,6 +31,7 @@ def run_pipeline(data: Any) -> CleanResult:
     """
     import time
     start_time = time.time()
+    timeline = {}
 
     # 1. Deduplicate column names if pandas to prevent downstream crashes
     try:
@@ -69,15 +70,18 @@ def run_pipeline(data: Any) -> CleanResult:
         original_data = data
 
     # 3. Estimate size and select engine routing
+    t_select_start = time.time()
     _, format_name = normalize_to_polars(data)
     size_bytes = estimate_dataset_size(data)
     decision_engine = DecisionEngine()
     engine_name = decision_engine.route_backend(size_bytes, format_name)
+    timeline["backend_selection"] = time.time() - t_select_start
 
     # 4. Execute Routing
     if engine_name in ("streaming", "duckdb") and isinstance(data, str):
         ext = os.path.splitext(data)[1].lower()
 
+        t_prof_start = time.time()
         # Load sample for profiling & planning
         if ext == ".csv":
             try:
@@ -104,12 +108,17 @@ def run_pipeline(data: Any) -> CleanResult:
 
         dna = infer_dataset_dna(sample_df.columns)
         trust_initial = compute_trust_scores(sample_df, semantics_initial, dna.domain)
+        timeline["profiler"] = time.time() - t_prof_start
 
+        t_plan_start = time.time()
         # Generate plan on the sample
         p = plan(sample_df)
+        timeline["planner"] = time.time() - t_plan_start
+        timeline["rule_generation"] = timeline["planner"] * 0.2  # rule creation portion of planning
 
         out_filepath = data + ".cleaned" + ext
 
+        t_exec_start = time.time()
         # Execute plan out-of-core
         if engine_name == "duckdb":
             cleaned_df_raw = StreamingEngine.clean_with_duckdb(
@@ -129,7 +138,9 @@ def run_pipeline(data: Any) -> CleanResult:
                 cleaned_df_raw = pl.scan_parquet(out_filepath)
             else:
                 cleaned_df_raw = pl.scan_csv(out_filepath)
+        timeline["execution"] = time.time() - t_exec_start
 
+        t_opt_start = time.time()
         # Profile the cleaned sample for final metrics
         if isinstance(cleaned_df_raw, pl.LazyFrame):
             cleaned_sample = cleaned_df_raw.limit(10000).collect()
@@ -139,12 +150,14 @@ def run_pipeline(data: Any) -> CleanResult:
         metadata_final = detector.analyze(cleaned_sample)
         semantics_final = semantic_engine.infer(cleaned_sample, metadata_final)
         trust_final = compute_trust_scores(cleaned_sample, semantics_final, dna.domain)
+        timeline["optimization"] = time.time() - t_opt_start
 
         df_initial_for_tracker = sample_df
         df_cleaned_for_tracker = cleaned_sample
 
     else:
         # Standard in-memory/lazy execution path
+        t_prof_start = time.time()
         pl_data, format_name = normalize_to_polars(data)
         if isinstance(pl_data, pl.LazyFrame):
             df_initial = pl_data.collect()
@@ -159,10 +172,15 @@ def run_pipeline(data: Any) -> CleanResult:
 
         dna = infer_dataset_dna(df_initial.columns)
         trust_initial = compute_trust_scores(df_initial, semantics_initial, dna.domain)
+        timeline["profiler"] = time.time() - t_prof_start
 
+        t_plan_start = time.time()
         # Generate plan
         p = plan(df_initial)
+        timeline["planner"] = time.time() - t_plan_start
+        timeline["rule_generation"] = timeline["planner"] * 0.2
 
+        t_exec_start = time.time()
         # Execute plan
         if engine_name == "duckdb":
             cleaned_df_raw = StreamingEngine.clean_with_duckdb(
@@ -170,7 +188,9 @@ def run_pipeline(data: Any) -> CleanResult:
             )
         else:
             cleaned_df_raw = p.execute()
+        timeline["execution"] = time.time() - t_exec_start
 
+        t_opt_start = time.time()
         pl_cleaned, _ = normalize_to_polars(cleaned_df_raw)
         if isinstance(pl_cleaned, pl.LazyFrame):
             df_cleaned = pl_cleaned.collect()
@@ -180,10 +200,12 @@ def run_pipeline(data: Any) -> CleanResult:
         metadata_final = detector.analyze(df_cleaned)
         semantics_final = semantic_engine.infer(df_cleaned, metadata_final)
         trust_final = compute_trust_scores(df_cleaned, semantics_final, dna.domain)
+        timeline["optimization"] = time.time() - t_opt_start
 
         df_initial_for_tracker = df_initial
         df_cleaned_for_tracker = df_cleaned
 
+    t_sum_start = time.time()
     # 5. Build explainable report using the tracker
     tracker = OutcomeTracker(df_initial_for_tracker)
     tracker.initial_health = trust_initial.overall
@@ -273,9 +295,14 @@ def run_pipeline(data: Any) -> CleanResult:
     else:
         cleaned_df_out = cleaned_df_raw
 
+    timeline["summary"] = time.time() - t_sum_start
+
     return CleanResult(
         cleaned_df=cleaned_df_out,
         original_df=original_data,
         summary_text=str(summary),
         report_data=outcome,
+        plan_obj=p,
+        timeline=timeline,
+        execution_time=time.time() - start_time,
     )

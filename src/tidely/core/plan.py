@@ -74,6 +74,38 @@ def plan(data: Any) -> RepairPlan:
     decision_engine = DecisionEngine()
     metadata = profile.metadata
 
+    import math
+    # Precompute statistics for all columns in a single Polars pass!
+    exprs = []
+    placeholders = ["?", "N/A", "n/a", "null", "NULL", "NaN", "nan"]
+    for col in df.columns:
+        dtype = df[col].dtype
+        exprs.append(pl.col(col).mode().first().alias(f"{col}__mode"))
+        if dtype.is_numeric():
+            exprs.extend([
+                pl.col(col).quantile(0.25).alias(f"{col}__q25"),
+                pl.col(col).quantile(0.75).alias(f"{col}__q75"),
+                pl.col(col).mean().alias(f"{col}__mean"),
+                pl.col(col).std().alias(f"{col}__std"),
+                pl.col(col).median().alias(f"{col}__median"),
+            ])
+        elif dtype == pl.String:
+            exprs.append(
+                pl.col(col)
+                .cast(pl.String)
+                .str.strip_chars()
+                .is_in(placeholders)
+                .sum()
+                .alias(f"{col}__placeholders")
+            )
+
+    if exprs:
+        stats_df = df.select(exprs)
+        stats_row = stats_df.row(0)
+        precomputed_stats = dict(zip(stats_df.columns, stats_row, strict=False))
+    else:
+        precomputed_stats = {}
+
     # 1. Column Diagnostics and Quality Scoring Before Cleaning
     column_diagnostics: dict[str, dict[str, Any]] = {}
     for col in df.columns:
@@ -81,20 +113,21 @@ def plan(data: Any) -> RepairPlan:
         semantic_info = profile.semantic_types.get(col, {"type": "Unknown", "confidence": 0.0, "match_rate": 1.0})
         stype = semantic_info["type"]
 
-        # Simple initial outlier check for scoring
+        # Simple initial outlier check for scoring using precomputed stats and samples
         has_outliers = False
         dtype = df[col].dtype
         if dtype.is_numeric() and col_meta.get("null_count", 0) == 0:
             try:
                 skew = col_meta.get("skewness", 0.0) or 0.0
                 if abs(skew) > 1.0:
-                    q1 = df.select(pl.col(col).quantile(0.25)).item()
-                    q3 = df.select(pl.col(col).quantile(0.75)).item()
+                    q1 = precomputed_stats.get(f"{col}__q25")
+                    q3 = precomputed_stats.get(f"{col}__q75")
                     if q1 is not None and q3 is not None:
                         iqr = q3 - q1
                         lower = q1 - 1.5 * iqr
                         upper = q3 + 1.5 * iqr
-                        outliers = df.filter((pl.col(col) < lower) | (pl.col(col) > upper)).height
+                        sample_list = metadata["samples"].get(col, [])
+                        outliers = sum(1 for x in sample_list if x is not None and (x < lower or x > upper))
                         has_outliers = outliers > 0
             except Exception:
                 pass
@@ -109,6 +142,7 @@ def plan(data: Any) -> RepairPlan:
             "algorithms_considered": [],
             "algorithm_chosen": "None",
             "reason": "Column is already clean.",
+            "role": semantic_info.get("role", "Text"),
         }
 
     # 2. Schema / Semantic Deduplication & Type Enforcement
@@ -116,34 +150,40 @@ def plan(data: Any) -> RepairPlan:
         stype = info["type"]
         conf = info["confidence"]
         dtype = df[col].dtype
+        role = info.get("role", "Text")
 
         # ID Deduplication
-        if stype == "ID/Key" and conf >= 0.9:
+        if (stype == "ID/Key" and conf >= 0.9) or (role in ("Primary Key", "UUID", "GUID", "Index")):
             if any(
                 kw in col.lower()
                 for kw in ("name", "desc", "title", "text", "seq", "val")
             ):
-                continue
-            try:
-                id_dups = df.height - df.n_unique(subset=[col])
-                if id_dups > 0:
-                    actions.append(
-                        RepairAction(
-                            category="Duplicate IDs",
-                            what_changed=f"Deduplicated primary key '{col}'.",
-                            why_it_changed=f"Found {id_dups} duplicate IDs. Dropped to enforce entity uniqueness.",
-                            confidence=conf,
-                            expected_score_bump=15,
-                            rule_fn=make_dedup_id_rule(col),
-                            column=col,
-                        )
-                    )
-                    points_recovered += 15.0
-                    column_diagnostics[col]["algorithm_chosen"] = "Deduplicate Primary Key"
-                    column_diagnostics[col]["algorithms_considered"].append("Deduplicate Primary Key")
-                    column_diagnostics[col]["reason"] = "Dropped duplicate IDs to enforce entity uniqueness."
-            except Exception:
                 pass
+            else:
+                try:
+                    id_dups = df.height - df.n_unique(subset=[col])
+                    if id_dups > 0:
+                        actions.append(
+                            RepairAction(
+                                category="Duplicate IDs",
+                                what_changed=f"Deduplicated primary key '{col}'.",
+                                why_it_changed=f"Found {id_dups} duplicate IDs. Dropped to enforce entity uniqueness.",
+                                confidence=conf,
+                                expected_score_bump=15,
+                                rule_fn=make_dedup_id_rule(col),
+                                column=col,
+                            )
+                        )
+                        points_recovered += 15.0
+                        column_diagnostics[col]["algorithm_chosen"] = "Deduplicate Primary Key"
+                        column_diagnostics[col]["algorithms_considered"].append("Deduplicate Primary Key")
+                        column_diagnostics[col]["reason"] = "Dropped duplicate IDs to enforce entity uniqueness."
+                except Exception:
+                    pass
+
+        # Protect IDs, targets, labels, and indexes from semantic value modification
+        if role in ("Target", "Label", "Primary Key", "Foreign Key", "UUID", "GUID", "Index", "Identifier"):
+            continue
 
         # Semantic Normalizations
         if stype == "Email" and conf >= 0.7:
@@ -282,6 +322,9 @@ def plan(data: Any) -> RepairPlan:
         for col in df.columns:
             stype = profile.semantic_types.get(col, {}).get("type", "Unknown")
             conf = profile.semantic_types.get(col, {}).get("confidence", 0.0)
+            role = profile.semantic_types.get(col, {}).get("role", "Text")
+            if role in ("Target", "Label", "Primary Key", "Foreign Key", "UUID", "GUID", "Index", "Identifier", "Boolean", "Categorical Integer"):
+                continue
             if stype in ("Name", "Address") and conf >= 0.7:
                 try:
                     import rapidfuzz
@@ -326,8 +369,9 @@ def plan(data: Any) -> RepairPlan:
 
     # 3. Missing Value Imputation, Outliers, & Memory Optimization
     for col in df.columns:
-        # Check if the column is a DNA Sequence to preserve it exactly
         stype = profile.semantic_types.get(col, {}).get("type", "Unknown")
+        role = profile.semantic_types.get(col, {}).get("role", "Text")
+        # Check if the column is a DNA Sequence to preserve it exactly
         if stype == "DNA Sequence":
             continue
 
@@ -338,17 +382,7 @@ def plan(data: Any) -> RepairPlan:
         # Replaces custom null placeholders like '?'
         placeholder_count = 0
         if dtype == pl.String:
-            try:
-                placeholders = ["?", "N/A", "n/a", "null", "NULL", "NaN", "nan"]
-                placeholder_count = df.select(
-                    pl.col(col)
-                    .cast(pl.String)
-                    .str.strip_chars()
-                    .is_in(placeholders)
-                    .sum()
-                ).item()
-            except Exception:
-                placeholder_count = 0
+            placeholder_count = precomputed_stats.get(f"{col}__placeholders", 0) or 0
 
         if placeholder_count > 0:
             actions.append(
@@ -366,8 +400,9 @@ def plan(data: Any) -> RepairPlan:
             points_recovered += 5.0
             null_count += placeholder_count
 
-        # Missing values handling using DecisionEngine
-        if null_count > 0:
+        # Missing values handling using DecisionEngine (skip if protected)
+        is_protected = role in ("Target", "Label", "Primary Key", "Foreign Key", "UUID", "GUID", "Index", "Identifier")
+        if null_count > 0 and not is_protected:
             skew_val = col_meta.get("skewness", 0.0) or 0.0
             is_skewed = abs(skew_val) > 1.0
             null_corrs = col_meta.get("null_correlations", {})
@@ -377,7 +412,7 @@ def plan(data: Any) -> RepairPlan:
                 dtype_str=str(dtype),
                 null_count=null_count,
                 total_count=df.height,
-                unique_count=df[col].n_unique(),
+                unique_count=col_meta["unique_count"],
                 is_skewed=is_skewed,
                 null_correlations=null_corrs,
             )
@@ -387,7 +422,7 @@ def plan(data: Any) -> RepairPlan:
             if strategy == "impute_group_median":
                 group_col = params["group_column"]
                 try:
-                    g_med = df.select(pl.col(col).median()).item()
+                    g_med = precomputed_stats.get(f"{col}__median")
                     g_med_val = float(g_med) if g_med is not None else 0.0
                     group_meds_df = df.group_by(group_col).agg(pl.col(col).median())
                     group_meds_map = {}
@@ -418,8 +453,7 @@ def plan(data: Any) -> RepairPlan:
             if strategy == "impute_group_mode":
                 group_col = params["group_column"]
                 try:
-                    g_mode_series = df.select(pl.col(col).mode())
-                    g_mode_val = g_mode_series.item(0, 0) if g_mode_series.height > 0 else "Unknown"
+                    g_mode_val = precomputed_stats.get(f"{col}__mode")
                     if g_mode_val is None:
                         g_mode_val = "Unknown"
                     group_modes_df = df.group_by(group_col).agg(pl.col(col).mode())
@@ -452,7 +486,7 @@ def plan(data: Any) -> RepairPlan:
                     strategy = "impute_mode"
 
             if strategy == "impute_median":
-                val = df.select(pl.col(col).median()).item()
+                val = precomputed_stats.get(f"{col}__median")
                 val_f = float(val) if val is not None else 0.0
                 actions.append(
                     RepairAction(
@@ -470,7 +504,7 @@ def plan(data: Any) -> RepairPlan:
                 column_diagnostics[col]["algorithm_chosen"] = "Median Imputation"
                 column_diagnostics[col]["reason"] = "Imputed using overall column Median (skewed distribution)."
             elif strategy == "impute_mean":
-                val = df.select(pl.col(col).mean()).item()
+                val = precomputed_stats.get(f"{col}__mean")
                 val_f = float(val) if val is not None else 0.0
                 actions.append(
                     RepairAction(
@@ -488,8 +522,7 @@ def plan(data: Any) -> RepairPlan:
                 column_diagnostics[col]["algorithm_chosen"] = "Mean Imputation"
                 column_diagnostics[col]["reason"] = "Imputed using overall column Mean (normal distribution)."
             elif strategy == "impute_mode":
-                mode_series = df.select(pl.col(col).mode())
-                val = mode_series.item(0, 0) if mode_series.height > 0 else "Unknown"
+                val = precomputed_stats.get(f"{col}__mode")
                 if val is None:
                     val = "Unknown"
                 sql_expr = f"COALESCE(\"{col}\", '{val}')" if isinstance(val, str) else f"COALESCE(\"{col}\", {val})"
@@ -542,8 +575,8 @@ def plan(data: Any) -> RepairPlan:
                 column_diagnostics[col]["algorithm_chosen"] = "Constant Imputation"
                 column_diagnostics[col]["reason"] = f"Imputed with constant '{fill_val}'."
 
-        # Outliers clipping (if numerical and no nulls)
-        if dtype.is_numeric() and null_count == 0:
+        # Outliers clipping (only on continuous numeric features and no nulls)
+        if role == "Continuous Numeric" and null_count == 0:
             skew_val = col_meta.get("skewness", 0.0) or 0.0
             kurt_val = col_meta.get("kurtosis", 0.0) or 0.0
             is_skewed = abs(skew_val) > 1.0
@@ -555,8 +588,8 @@ def plan(data: Any) -> RepairPlan:
             column_diagnostics[col]["algorithms_considered"].extend(["IQR Clipping", "Z-Score Clipping", "Modified Z-Score Clipping"])
 
             if outlier_strat == "iqr":
-                q1 = df.select(pl.col(col).quantile(0.25)).item()
-                q3 = df.select(pl.col(col).quantile(0.75)).item()
+                q1 = precomputed_stats.get(f"{col}__q25")
+                q3 = precomputed_stats.get(f"{col}__q75")
                 threshold = outlier_params.get("threshold", 1.5)
                 if q1 is not None and q3 is not None:
                     iqr = q3 - q1
@@ -581,8 +614,8 @@ def plan(data: Any) -> RepairPlan:
                 column_diagnostics[col]["algorithm_chosen"] = "IQR Clipping"
                 column_diagnostics[col]["reason"] = "Extreme heavy-tailed distribution, outliers clipped using IQR."
             elif outlier_strat == "z_score":
-                mean_v = df.select(pl.col(col).mean()).item()
-                std_v = df.select(pl.col(col).std()).item()
+                mean_v = precomputed_stats.get(f"{col}__mean")
+                std_v = precomputed_stats.get(f"{col}__std")
                 threshold = outlier_params.get("threshold", 3.0)
                 if mean_v is not None and std_v is not None and std_v > 0:
                     lower = float(mean_v - threshold * std_v)
@@ -606,7 +639,7 @@ def plan(data: Any) -> RepairPlan:
                 column_diagnostics[col]["algorithm_chosen"] = "Z-Score Clipping"
                 column_diagnostics[col]["reason"] = "Normally distributed column, Z-score clipping applied."
             elif outlier_strat == "modified_zscore":
-                median_v = df.select(pl.col(col).median()).item()
+                median_v = precomputed_stats.get(f"{col}__median")
                 threshold = outlier_params.get("threshold", 3.5)
                 if median_v is not None:
                     mad_v = df.select((pl.col(col) - median_v).abs().median()).item()
@@ -635,63 +668,65 @@ def plan(data: Any) -> RepairPlan:
                 column_diagnostics[col]["reason"] = "Slightly skewed distribution, clipped using MAD-based Modified Z-Score."
 
         # Memory optimizations
-        if dtype == pl.String:
-            n_unique = df[col].n_unique()
-            if n_unique < (df.height * 0.05) and df.height > 1000:
-                actions.append(
-                    RepairAction(
-                        category="Memory Optimization",
-                        what_changed=f"Converted '{col}' to Categorical.",
-                        why_it_changed=f"Only {n_unique} unique values detected. Reduces memory footprint by up to 80%.",
-                        confidence=0.95,
-                        expected_score_bump=5,
-                        rule_fn=make_categorical_rule(col),
-                        column=col,
-                        sql_expr=f"CAST(\"{col}\" AS VARCHAR)",
-                    )
-                )
-                points_recovered += 5.0
-                column_diagnostics[col]["algorithm_chosen"] = "Cast to Categorical"
-                column_diagnostics[col]["reason"] = "String column converted to Categorical (cardinality ratio < 5%)."
-        elif dtype.is_integer():
-            c_min, c_max = df[col].min(), df[col].max()
-            if isinstance(c_min, (int, float)) and isinstance(c_max, (int, float)):
-                if c_min >= -128 and c_max <= 127 and dtype != pl.Int8:
+        if not is_protected:
+            if dtype == pl.String:
+                n_unique = col_meta["unique_count"]
+                if n_unique < (df.height * 0.05) and df.height > 1000:
                     actions.append(
                         RepairAction(
                             category="Memory Optimization",
-                            what_changed=f"Downcasted '{col}' to Int8.",
-                            why_it_changed="Values strictly fall between -128 and 127. Saves massive memory overhead.",
-                            confidence=1.0,
-                            expected_score_bump=2,
-                            rule_fn=make_downcast_rule(col, pl.Int8),
+                            what_changed=f"Converted '{col}' to Categorical.",
+                            why_it_changed=f"Only {n_unique} unique values detected. Reduces memory footprint by up to 80%.",
+                            confidence=0.95,
+                            expected_score_bump=5,
+                            rule_fn=make_categorical_rule(col),
                             column=col,
-                            sql_expr=f"CAST(\"{col}\" AS TINYINT)",
+                            sql_expr=f"CAST(\"{col}\" AS VARCHAR)",
                         )
                     )
-                    points_recovered += 2.0
-                    column_diagnostics[col]["algorithm_chosen"] = "Downcast to Int8"
-                    column_diagnostics[col]["reason"] = "Integer column downcasted to Int8."
-                elif (
-                    c_min >= -32768
-                    and c_max <= 32767
-                    and dtype not in (pl.Int8, pl.Int16)
-                ):
-                    actions.append(
-                        RepairAction(
-                            category="Memory Optimization",
-                            what_changed=f"Downcasted '{col}' to Int16.",
-                            why_it_changed="Values strictly fit in Int16 bounds. Saves massive memory overhead.",
-                            confidence=1.0,
-                            expected_score_bump=2,
-                            rule_fn=make_downcast_rule(col, pl.Int16),
-                            column=col,
-                            sql_expr=f"CAST(\"{col}\" AS SMALLINT)",
+                    points_recovered += 5.0
+                    column_diagnostics[col]["algorithm_chosen"] = "Cast to Categorical"
+                    column_diagnostics[col]["reason"] = "String column converted to Categorical (cardinality ratio < 5%)."
+            elif dtype.is_integer():
+                c_min = precomputed_stats.get(f"{col}__min")
+                c_max = precomputed_stats.get(f"{col}__max")
+                if isinstance(c_min, (int, float)) and isinstance(c_max, (int, float)):
+                    if c_min >= -128 and c_max <= 127 and dtype != pl.Int8:
+                        actions.append(
+                            RepairAction(
+                                category="Memory Optimization",
+                                what_changed=f"Downcasted '{col}' to Int8.",
+                                why_it_changed="Values strictly fall between -128 and 127. Saves massive memory overhead.",
+                                confidence=1.0,
+                                expected_score_bump=2,
+                                rule_fn=make_downcast_rule(col, pl.Int8),
+                                column=col,
+                                sql_expr=f"CAST(\"{col}\" AS TINYINT)",
+                            )
                         )
-                    )
-                    points_recovered += 2.0
-                    column_diagnostics[col]["algorithm_chosen"] = "Downcast to Int16"
-                    column_diagnostics[col]["reason"] = "Integer column downcasted to Int16."
+                        points_recovered += 2.0
+                        column_diagnostics[col]["algorithm_chosen"] = "Downcast to Int8"
+                        column_diagnostics[col]["reason"] = "Integer column downcasted to Int8."
+                    elif (
+                        c_min >= -32768
+                        and c_max <= 32767
+                        and dtype not in (pl.Int8, pl.Int16)
+                    ):
+                        actions.append(
+                            RepairAction(
+                                category="Memory Optimization",
+                                what_changed=f"Downcasted '{col}' to Int16.",
+                                why_it_changed="Values strictly fit in Int16 bounds. Saves massive memory overhead.",
+                                confidence=1.0,
+                                expected_score_bump=2,
+                                rule_fn=make_downcast_rule(col, pl.Int16),
+                                column=col,
+                                sql_expr=f"CAST(\"{col}\" AS SMALLINT)",
+                            )
+                        )
+                        points_recovered += 2.0
+                        column_diagnostics[col]["algorithm_chosen"] = "Downcast to Int16"
+                        column_diagnostics[col]["reason"] = "Integer column downcasted to Int16."
 
     # Row-level Deduplication is run at the very end
     try:

@@ -4,38 +4,29 @@ import math
 from typing import Any
 
 
-def calculate_entropy(series: Any, is_pandas: bool) -> float:
-    """Computes Shannon entropy of column values on a representative sample."""
-    try:
-        if is_pandas:
-            sample_series = series.sample(n=min(len(series), 10000), random_state=42)
-            counts = sample_series.value_counts()
-            total = counts.sum()
-            if total == 0:
-                return 0.0
-            ent = 0.0
-            for c in counts:
-                p = c / total
-                if p > 0:
-                    ent -= p * math.log2(p)
-            return float(ent)
-        else:
-            if series.len() == 0:
-                return 0.0
-            sample_series = series.sample(n=min(series.len(), 10000), seed=42)
-            vc = sample_series.value_counts()
-            counts = vc["count"].to_list()
-            total = sum(counts)
-            if total == 0:
-                return 0.0
-            ent = 0.0
-            for c in counts:
-                p = c / total
-                if p > 0:
-                    ent -= p * math.log2(p)
-            return float(ent)
-    except Exception:
+def calculate_entropy_from_list(sample_list: list[Any]) -> float:
+    """Computes Shannon entropy of column values on a representative list of values."""
+    if not sample_list:
         return 0.0
+    counts = {}
+    for val in sample_list:
+        try:
+            counts[val] = counts.get(val, 0) + 1
+        except TypeError:
+            try:
+                s_val = str(val)
+                counts[s_val] = counts.get(s_val, 0) + 1
+            except Exception:
+                pass
+    total = sum(counts.values())
+    if total == 0:
+        return 0.0
+    ent = 0.0
+    for c in counts.values():
+        p = c / total
+        if p > 0:
+            ent -= p * math.log2(p)
+    return float(ent)
 
 
 def calculate_binary_corr(x_null: list[bool], y_null: list[bool]) -> float:
@@ -82,6 +73,8 @@ class DetectionEngine:
         # Check if Pandas
         if hasattr(df, "sample") and is_pandas:
             metadata["duplicate_rows"] = int(df.duplicated().sum())
+            sample_df = df.sample(n=min(len(df), self.max_sample_size), random_state=42)
+
             for col in df.columns:
                 series = df[col]
                 null_cnt = int(series.isna().sum())
@@ -98,29 +91,10 @@ class DetectionEngine:
                     except Exception:
                         pass
 
-                metadata["columns"][col] = {
-                    "dtype": str(series.dtype),
-                    "null_count": null_cnt,
-                    "null_percentage": null_percentage,
-                    "density": 1.0 - null_percentage,
-                    "unique_count": unique_cnt,
-                    "cardinality": float(unique_cnt / max(total_cnt, 1)),
-                    "uniqueness": bool(unique_cnt == total_cnt),
-                    "total_count": total_cnt,
-                    "memory_footprint_bytes": mem_bytes,
-                }
-                # Sample up to max_sample_size non-null values
-                valid_vals = series.dropna()
-                sample_size = min(len(valid_vals), self.max_sample_size)
-                sample_list = (
-                    valid_vals.sample(n=sample_size, random_state=42).tolist()
-                    if sample_size > 0
-                    else []
-                )
+                sample_list = sample_df[col].dropna().tolist()
                 metadata["samples"][col] = sample_list
 
-                # Calculate entropy
-                metadata["columns"][col]["entropy"] = calculate_entropy(series, is_pandas=True)
+                entropy_val = calculate_entropy_from_list(sample_list)
 
                 # Skewness and kurtosis
                 skew_val = None
@@ -134,8 +108,21 @@ class DetectionEngine:
                         kurt_val = float(series.kurtosis())
                     except Exception:
                         pass
-                metadata["columns"][col]["skewness"] = skew_val
-                metadata["columns"][col]["kurtosis"] = kurt_val
+
+                metadata["columns"][col] = {
+                    "dtype": str(series.dtype),
+                    "null_count": null_cnt,
+                    "null_percentage": null_percentage,
+                    "density": 1.0 - null_percentage,
+                    "unique_count": unique_cnt,
+                    "cardinality": float(unique_cnt / max(total_cnt, 1)),
+                    "uniqueness": bool(unique_cnt == total_cnt),
+                    "total_count": total_cnt,
+                    "memory_footprint_bytes": mem_bytes,
+                    "entropy": entropy_val,
+                    "skewness": skew_val,
+                    "kurtosis": kurt_val,
+                }
 
                 # Dtype confidence
                 dtype_conf = 1.0
@@ -155,25 +142,94 @@ class DetectionEngine:
                 metadata["columns"][col]["dtype_confidence"] = dtype_conf
 
         elif hasattr(df, "sample") and hasattr(df, "null_count"):
+            import polars as pl
+
+            # Calculate duplicate rows
             try:
-                metadata["duplicate_rows"] = int(df.is_duplicated().sum())
+                metadata["duplicate_rows"] = int(df.height - df.unique().height)
             except Exception:
                 metadata["duplicate_rows"] = 0
+
+            # Sample once up front for samples and entropy
+            sample_df = df.sample(n=min(df.height, self.max_sample_size), seed=42)
+
+            # Build aggregated stats expressions to run in a single pass
+            exprs = []
+            for col in df.columns:
+                dtype = df[col].dtype
+                exprs.append(pl.col(col).null_count().alias(f"{col}__null_count"))
+                exprs.append(pl.col(col).n_unique().alias(f"{col}__n_unique"))
+                if dtype.is_numeric():
+                    exprs.append(pl.col(col).skew().alias(f"{col}__skew"))
+                    # Polars has kurtosis or kurt? Let's check both or use kurtosis
+                    if hasattr(pl.col(col), "kurtosis"):
+                        exprs.append(pl.col(col).kurtosis().alias(f"{col}__kurt"))
+                    else:
+                        exprs.append(pl.col(col).kurt().alias(f"{col}__kurt"))
+
+            # Execute all expressions in parallel in 1 pass!
+            if exprs:
+                stats_df = df.select(exprs)
+                stats_row = stats_df.row(0)
+                stats_dict = dict(zip(stats_df.columns, stats_row, strict=False))
+            else:
+                stats_dict = {}
+
             for col in df.columns:
                 series = df[col]
-                null_cnt = int(series.null_count())
-                unique_cnt = int(series.n_unique())
-                total_cnt = int(series.len())
+                dtype = series.dtype
 
+                null_cnt = stats_dict.get(f"{col}__null_count", 0)
+                if null_cnt is None:
+                    null_cnt = 0
+                else:
+                    null_cnt = int(null_cnt)
+
+                unique_cnt = stats_dict.get(f"{col}__n_unique", 0)
+                if unique_cnt is None:
+                    unique_cnt = 0
+                else:
+                    unique_cnt = int(unique_cnt)
+
+                total_cnt = df.height
                 null_percentage = float(null_cnt / max(total_cnt, 1))
+
+                # Estimated size in bytes
                 mem_bytes = 0
                 try:
                     mem_bytes = int(series.estimated_size())
                 except Exception:
                     pass
 
+                # Get sample list from our pre-sampled df
+                sample_col = sample_df[col]
+                # Filter out nulls/NaNs from the sample list
+                sample_list = [v for v in sample_col.to_list() if v is not None]
+                # If floats, also filter out NaNs
+                if dtype.is_float():
+                    sample_list = [v for v in sample_list if not (isinstance(v, float) and math.isnan(v))]
+
+                metadata["samples"][col] = sample_list
+
+                # Calculate entropy from sample list (very fast python list logic)
+                entropy_val = calculate_entropy_from_list(sample_list)
+
+                skew_val = stats_dict.get(f"{col}__skew")
+                if skew_val is not None:
+                    try:
+                        skew_val = float(skew_val)
+                    except (ValueError, TypeError):
+                        skew_val = None
+
+                kurt_val = stats_dict.get(f"{col}__kurt")
+                if kurt_val is not None:
+                    try:
+                        kurt_val = float(kurt_val)
+                    except (ValueError, TypeError):
+                        kurt_val = None
+
                 metadata["columns"][col] = {
-                    "dtype": str(series.dtype),
+                    "dtype": str(dtype),
                     "null_count": null_cnt,
                     "null_percentage": null_percentage,
                     "density": 1.0 - null_percentage,
@@ -182,41 +238,14 @@ class DetectionEngine:
                     "uniqueness": bool(unique_cnt == total_cnt),
                     "total_count": total_cnt,
                     "memory_footprint_bytes": mem_bytes,
+                    "entropy": entropy_val,
+                    "skewness": skew_val,
+                    "kurtosis": kurt_val,
                 }
-                # Sample up to max_sample_size non-null values
-                valid_vals = series.drop_nulls()
-                sample_size = min(valid_vals.len(), self.max_sample_size)
-                sample_list = (
-                    valid_vals.sample(n=sample_size, seed=42).to_list()
-                    if sample_size > 0
-                    else []
-                )
-                metadata["samples"][col] = sample_list
-
-                # Calculate entropy
-                metadata["columns"][col]["entropy"] = calculate_entropy(series, is_pandas=False)
-
-                # Skewness and kurtosis
-                skew_val = None
-                kurt_val = None
-                if series.dtype.is_numeric():
-                    try:
-                        skew_val = float(series.skew())
-                    except Exception:
-                        pass
-                    try:
-                        if hasattr(series, "kurtosis"):
-                            kurt_val = float(series.kurtosis())
-                        elif hasattr(series, "kurt"):
-                            kurt_val = float(series.kurt())
-                    except Exception:
-                        pass
-                metadata["columns"][col]["skewness"] = skew_val
-                metadata["columns"][col]["kurtosis"] = kurt_val
 
                 # Dtype confidence
                 dtype_conf = 1.0
-                if series.dtype == Any or str(series.dtype).lower() in ("string", "object"):
+                if dtype == pl.Object or str(dtype).lower() in ("string", "object"):
                     numeric_matches = 0
                     for val in sample_list:
                         if val is not None:
@@ -254,7 +283,9 @@ class DetectionEngine:
                                     corrs[other] = float(val)
                             metadata["columns"][col]["null_correlations"] = corrs
                     else:
-                        null_df = df.head(sample_len).select([pl.col(c).is_null().cast(pl.Int32).alias(c) for c in cols_with_nulls])
+                        # Use precomputed sample_df if possible
+                        active_sample = sample_df if 'sample_df' in locals() else df.head(sample_len)
+                        null_df = active_sample.head(sample_len).select([pl.col(c).is_null().cast(pl.Int32).alias(c) for c in cols_with_nulls])
                         import warnings
                         with warnings.catch_warnings():
                             warnings.filterwarnings("ignore", category=RuntimeWarning)

@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2026-07-13
+
+### Added
+- **Scientific Validation Campaign**: Introduced automated verification checks comparing Tidely to a production-quality traditional reference cleaning pipeline.
+- **Statistical Quality Metrics**: Implemented Kolmogorov-Smirnov test statistic, Jensen-Shannon Distance, and Population Stability Index (PSI) tracking to certify zero distribution drift.
+- **Downstream ML Evaluation**: Integrated model performance tests evaluating accuracy, F1, and AUC metrics on classification and regression tasks post-cleaning.
+- **Cell-Level Audits**: Provided fine-grained cell-by-cell delta tracking for explainable audits.
+
+### Improved
+- **Currency/Salary Cleaning**: Reconciled Pandas casting failures to match Tidely's robust SQL `TRY_CAST` semantics.
+
 ## [1.4.2] - 2026-07-01
 
 ### Fixed

@@ -4,20 +4,32 @@ This library provides production-grade data quality scoring, semantic type infer
 and automated data cleaning for Pandas and Polars.
 """
 
-from tidely.api import clean, inspect, load, save, validate
-from tidely.core.clean_engine import RepairPlan
-from tidely.core.errors import TidelyError
-from tidely.core.profile import DatasetProfile
+from typing import Any
 
-__version__ = "1.4.2"
+_LAZY_EXPORTS = {
+    "clean": "tidely.api",
+    "inspect": "tidely.api",
+    "load": "tidely.api",
+    "save": "tidely.api",
+    "validate": "tidely.api",
+    "DatasetProfile": "tidely.core.profile",
+    "RepairPlan": "tidely.core.clean_engine",
+    "TidelyError": "tidely.core.errors",
+}
 
-__all__ = [
-    "clean",
-    "inspect",
-    "load",
-    "save",
-    "validate",
-    "DatasetProfile",
-    "RepairPlan",
-    "TidelyError",
-]
+__version__ = "1.4.3"
+
+def __getattr__(name: str) -> Any:
+    if name in _LAZY_EXPORTS:
+        import importlib
+        module = importlib.import_module(_LAZY_EXPORTS[name])
+        val = getattr(module, name)
+        # Cache the imported attribute at module level to avoid future lookup overhead
+        globals()[name] = val
+        return val
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+def __dir__() -> list[str]:
+    return list(_LAZY_EXPORTS.keys()) + ["__version__"]
+
+__all__ = list(_LAZY_EXPORTS.keys())
