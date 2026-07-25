@@ -18,7 +18,7 @@
 
 <p align="center">
   <a href="https://github.com/aaryanrwt/Tidely/actions/workflows/ci.yml">
-    <img src="https://github.com/aaryanrwt/Tidely/actions/workflows/ci.yml/badge.svg?branch=main" alt="Tidely CI">
+    <img src="https://github.com/aaryanrwt/Tidely/actions/workflows/ci.yml/badge.svg" alt="Tidely CI">
   </a>
   <a href="https://pypi.org/project/tidely/">
     <img src="https://img.shields.io/pypi/v/tidely?color=blue" alt="PyPI Version">
