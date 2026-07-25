@@ -409,6 +409,7 @@ class CleanResult:
     def version(self) -> str:
         """Returns the version of Tidely used."""
         import tidely
+
         return tidely.__version__
 
     def undo(self) -> Any:
