@@ -113,7 +113,9 @@ df = pd.read_csv("dirty_data.csv")
 df = df.drop_duplicates()
 
 # Impute missing values with group medians
-df["Salary"] = df.groupby("Department")["Salary"].transform(lambda x: x.fillna(x.median()))
+df["Salary"] = df.groupby("Department")["Salary"].transform(
+    lambda x: x.fillna(x.median())
+)
 
 # Clean and pad ZIP codes
 df["Zip"] = df["Zip"].astype(str).str.replace(r"\.0$", "", regex=True)
