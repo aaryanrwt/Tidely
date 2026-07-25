@@ -162,14 +162,15 @@ class StreamingEngine:
         elif ext == ".parquet":
             import pyarrow.parquet as pq
 
-            pf = pq.ParquetFile(filepath)  # type: ignore[no-untyped-call]
+            pq_module: Any = pq
+            pf = pq_module.ParquetFile(filepath)
 
             # Create Parquet writer
             writer = None
             try:
                 # Iterate row groups
                 for i in range(pf.num_row_groups):
-                    table = pf.read_row_group(i)  # type: ignore[no-untyped-call]
+                    table = pf.read_row_group(i)
                     chunk_df = cast(pl.DataFrame, pl.from_arrow(table))
 
                     # Run plan on chunk
@@ -182,11 +183,11 @@ class StreamingEngine:
                     # Write PyArrow batch
                     out_table = chunk_df.to_arrow()
                     if writer is None:
-                        writer = pq.ParquetWriter(temp_out, out_table.schema)  # type: ignore[no-untyped-call]
-                    writer.write_table(out_table)  # type: ignore[no-untyped-call]
+                        writer = pq_module.ParquetWriter(temp_out, out_table.schema)
+                    writer.write_table(out_table)
             finally:
                 if writer is not None:
-                    writer.close()  # type: ignore[no-untyped-call]
+                    writer.close()
 
             # Scan cleaned Parquet
             return pl.scan_parquet(temp_out)

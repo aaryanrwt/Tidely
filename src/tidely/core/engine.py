@@ -92,12 +92,13 @@ def run_pipeline(data: Any) -> CleanResult:
         elif ext == ".parquet":
             import pyarrow.parquet as pq
 
-            pf = pq.ParquetFile(data)  # type: ignore[no-untyped-call]
+            pq_module: Any = pq
+            pf = pq_module.ParquetFile(data)
             from typing import cast
 
             sample_df = cast(
                 pl.DataFrame,
-                pl.from_arrow(pf.read_row_group(0).slice(0, 10000)),  # type: ignore[no-untyped-call]
+                pl.from_arrow(pf.read_row_group(0).slice(0, 10000)),
             )
         else:
             pl_lazy, _ = normalize_to_polars(data)

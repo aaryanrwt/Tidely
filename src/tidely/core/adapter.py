@@ -12,15 +12,17 @@ try:
 except ImportError:
     pd = None
 
+pa: Any = None
 try:
     import pyarrow as pa
 except ImportError:
-    pa = None  # type: ignore[assignment]
+    pass
 
+duckdb: Any = None
 try:
     import duckdb
 except ImportError:
-    duckdb = None  # type: ignore[assignment]
+    pass
 
 
 def estimate_dataset_size(data: Any) -> int:
