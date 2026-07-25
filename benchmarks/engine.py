@@ -11,13 +11,11 @@ from __future__ import annotations
 import gc
 import logging
 import os
-import sys
-import time
 import tempfile
+import time
 import traceback
 from typing import Any
 
-import pandas as pd
 import psutil
 
 from benchmarks.registry import DATASETS, load_dataset_safe
@@ -61,8 +59,9 @@ def _benchmark_one(ds_info: dict[str, Any], smoke_test: bool = False) -> dict[st
     Returns:
         Result dict with timing, memory, validation, and metadata.
     """
-    import tidely as td
     import polars as pl
+
+    import tidely as td
 
     ds_id = ds_info["id"]
     ds_name = ds_info["name"]

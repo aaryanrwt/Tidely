@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 BENCHMARK_MD = os.path.join("benchmarks", "BENCHMARK.md")
@@ -52,7 +52,7 @@ def generate_reports(
         results: List of per-dataset result dicts from the benchmark engine.
         regression_threshold: Max acceptable Tidely/Traditional time ratio.
     """
-    timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    timestamp = datetime.now(tz=UTC).strftime("%Y-%m-%d %H:%M UTC")
 
     # ── JSON ─────────────────────────────────────────────────────────────
     payload = {
@@ -126,8 +126,8 @@ def generate_reports(
         val = r.get("validation", {})
         checks = val.get("checks", {})
 
-        def _c(key: str) -> str:
-            return "✅" if checks.get(key, True) else "❌"
+        def _c(key: str, checks_dict: dict[str, bool] = checks) -> str:
+            return "✅" if checks_dict.get(key, True) else "❌"
 
         lines.append(
             f"| {r.get('dataset', '')} "

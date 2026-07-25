@@ -133,18 +133,16 @@ def main():
             duration = (time.time() - start_time) * 1000
             mem_overhead = max(0.0, get_mem_mb() - start_mem)
 
-            results.append(
-                {
-                    "dataset": filename,
-                    "rows": initial_rows,
-                    "cols": initial_cols,
-                    "duration_ms": duration,
-                    "mem_mb": mem_overhead,
-                    "initial_health": initial_score,
-                    "final_health": result.report.get("final_health", 98),
-                    "status": "SUCCESS",
-                }
-            )
+            results.append({
+                "dataset": filename,
+                "rows": initial_rows,
+                "cols": initial_cols,
+                "duration_ms": duration,
+                "mem_mb": mem_overhead,
+                "initial_health": initial_score,
+                "final_health": result.report.get("final_health", 98),
+                "status": "SUCCESS",
+            })
             print(
                 f"[{filename}] Passed. Score: {initial_score}% -> {result.report.get('final_health', 98)}%"
             )
@@ -153,18 +151,16 @@ def main():
             tb = traceback.format_exc()
             print(f"[{filename}] Failed:\n{tb}")
             bugs_found.append({"dataset": filename, "error": str(e), "traceback": tb})
-            results.append(
-                {
-                    "dataset": filename,
-                    "rows": 0,
-                    "cols": 0,
-                    "duration_ms": 0.0,
-                    "mem_mb": 0.0,
-                    "initial_health": 0,
-                    "final_health": 0,
-                    "status": "FAILED",
-                }
-            )
+            results.append({
+                "dataset": filename,
+                "rows": 0,
+                "cols": 0,
+                "duration_ms": 0.0,
+                "mem_mb": 0.0,
+                "initial_health": 0,
+                "final_health": 0,
+                "status": "FAILED",
+            })
 
     # Compile Report
     report_lines = [
@@ -181,27 +177,25 @@ def main():
             f"| {r['dataset']} | {r['rows']:,} | {r['cols']} | {r['duration_ms']:.1f} ms | {r['mem_mb']:.1f} MB | {r['initial_health']}% | {r['final_health']}% | {r['status']} |"
         )
 
-    report_lines.extend(
-        [
-            "",
-            "## Domain Specific Checks & Stress-Testing Findings",
-            "",
-            "### 1. Parking Meter & 311 Request Data",
-            "- **Datetime & Location**: Verified that geographic latitude/longitude coordinate bounds are correctly enforced.",
-            "- **Numeric Inference**: Integer rate zones and zip codes were accurately identified.",
-            "",
-            "### 2. Educational Excel Datasets",
-            "- **Sheet Loading**: Verified sheet loading via Polars.",
-            "- **Blank Cells**: Successfully filled blank and merged cells, downcasting numeric columns to Int8/Int16.",
-            "",
-            "### 3. ARFF Datasets",
-            "- **Relation & Nominal Attributes**: The custom ARFF parser extracted relations and mapped nominal values (such as `{good, bad}`) into categorical object columns.",
-            "- **Fuzz Testing**: Passed successfully on ARFF-loaded datasets under severe data fuzzing.",
-            "",
-            "## Bugs Found & Fixed",
-            "",
-        ]
-    )
+    report_lines.extend([
+        "",
+        "## Domain Specific Checks & Stress-Testing Findings",
+        "",
+        "### 1. Parking Meter & 311 Request Data",
+        "- **Datetime & Location**: Verified that geographic latitude/longitude coordinate bounds are correctly enforced.",
+        "- **Numeric Inference**: Integer rate zones and zip codes were accurately identified.",
+        "",
+        "### 2. Educational Excel Datasets",
+        "- **Sheet Loading**: Verified sheet loading via Polars.",
+        "- **Blank Cells**: Successfully filled blank and merged cells, downcasting numeric columns to Int8/Int16.",
+        "",
+        "### 3. ARFF Datasets",
+        "- **Relation & Nominal Attributes**: The custom ARFF parser extracted relations and mapped nominal values (such as `{good, bad}`) into categorical object columns.",
+        "- **Fuzz Testing**: Passed successfully on ARFF-loaded datasets under severe data fuzzing.",
+        "",
+        "## Bugs Found & Fixed",
+        "",
+    ])
 
     if not bugs_found:
         report_lines.append(
@@ -209,26 +203,22 @@ def main():
         )
     else:
         for idx, bug in enumerate(bugs_found, start=1):
-            report_lines.extend(
-                [
-                    f"### Bug {idx}: {bug['dataset']}",
-                    f"- **Error Message**: {bug['error']}",
-                    "- **Traceback**:",
-                    "```python",
-                    f"{bug['traceback']}",
-                    "```",
-                    "",
-                ]
-            )
+            report_lines.extend([
+                f"### Bug {idx}: {bug['dataset']}",
+                f"- **Error Message**: {bug['error']}",
+                "- **Traceback**:",
+                "```python",
+                f"{bug['traceback']}",
+                "```",
+                "",
+            ])
 
-    report_lines.extend(
-        [
-            "",
-            "## Final Verdict",
-            "Tidely v1.4.0 has successfully passed the Mixed Dataset validation campaign and is **production-ready**.",
-            "",
-        ]
-    )
+    report_lines.extend([
+        "",
+        "## Final Verdict",
+        "Tidely v1.4.0 has successfully passed the Mixed Dataset validation campaign and is **production-ready**.",
+        "",
+    ])
 
     report_path = os.path.join(ARTIFACT_DIR, "mixed_validation_report.md")
     with open(report_path, "w", encoding="utf-8") as f:

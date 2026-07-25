@@ -59,19 +59,17 @@ def main():
         if wine_df[col].dtype == "float64":
             assert res_wine.df[col].dtype in ("float64", "float32")
 
-    results.append(
-        {
-            "id": 186,
-            "name": "Wine Quality",
-            "rows": len(wine_df),
-            "cols": len(wine_df.columns),
-            "latency_ms": (t_end - t_start) * 1000,
-            "mem_mb": max(0.0, mem_end - mem_start),
-            "initial_health": profile_wine.trust_score.overall,
-            "final_health": res_wine.report["final_health"],
-            "status": "SUCCESS",
-        }
-    )
+    results.append({
+        "id": 186,
+        "name": "Wine Quality",
+        "rows": len(wine_df),
+        "cols": len(wine_df.columns),
+        "latency_ms": (t_end - t_start) * 1000,
+        "mem_mb": max(0.0, mem_end - mem_start),
+        "initial_health": profile_wine.trust_score.overall,
+        "final_health": res_wine.report["final_health"],
+        "status": "SUCCESS",
+    })
 
     # ----------------------------------------------------
     # Dataset 2: Adult Income (ID = 2)
@@ -124,19 +122,17 @@ def main():
         "Adult Income dataset should not contain '?' missing placeholders post-clean!"
     )
 
-    results.append(
-        {
-            "id": 2,
-            "name": "Adult Income",
-            "rows": len(adult_df),
-            "cols": len(adult_df.columns),
-            "latency_ms": (t_end - t_start) * 1000,
-            "mem_mb": max(0.0, mem_end - mem_start),
-            "initial_health": profile_adult.trust_score.overall,
-            "final_health": res_adult.report["final_health"],
-            "status": "SUCCESS",
-        }
-    )
+    results.append({
+        "id": 2,
+        "name": "Adult Income",
+        "rows": len(adult_df),
+        "cols": len(adult_df.columns),
+        "latency_ms": (t_end - t_start) * 1000,
+        "mem_mb": max(0.0, mem_end - mem_start),
+        "initial_health": profile_adult.trust_score.overall,
+        "final_health": res_adult.report["final_health"],
+        "status": "SUCCESS",
+    })
 
     # ----------------------------------------------------
     # Dataset 3: Molecular Biology Splice Junction (ID = 69)
@@ -196,19 +192,17 @@ def main():
             f"DNA sequences in column '{col}' were corrupted or normalized!"
         )
 
-    results.append(
-        {
-            "id": 69,
-            "name": "Molecular Biology",
-            "rows": len(splice_df),
-            "cols": len(splice_df.columns),
-            "latency_ms": (t_end - t_start) * 1000,
-            "mem_mb": max(0.0, mem_end - mem_start),
-            "initial_health": profile_splice.trust_score.overall,
-            "final_health": res_splice.report["final_health"],
-            "status": "SUCCESS",
-        }
-    )
+    results.append({
+        "id": 69,
+        "name": "Molecular Biology",
+        "rows": len(splice_df),
+        "cols": len(splice_df.columns),
+        "latency_ms": (t_end - t_start) * 1000,
+        "mem_mb": max(0.0, mem_end - mem_start),
+        "initial_health": profile_splice.trust_score.overall,
+        "final_health": res_splice.report["final_health"],
+        "status": "SUCCESS",
+    })
 
     # ----------------------------------------------------
     # Generate the report
@@ -227,28 +221,26 @@ def main():
             f"| {r['id']} | {r['name']} | {r['rows']:,} | {r['cols']} | {r['latency_ms']:.1f} ms | {r['mem_mb']:.1f} MB | {r['initial_health']}% | {r['final_health']}% | {r['status']} |"
         )
 
-    report_lines.extend(
-        [
-            "",
-            "## Findings & Core Assertions Verified",
-            "",
-            "### 1. Wine Quality (ID = 186)",
-            "- **Numeric Precision**: Floating-point decimals preserved exactly.",
-            "- **Outlier Detection**: Median outlier clipping applied safely.",
-            "",
-            "### 2. Adult Income (ID = 2)",
-            "- **Missing Value Replacement**: Successfully scanned and replaced all custom null placeholders (`?`) with true nulls.",
-            "- **Automatic Imputation**: Auto-imputed the missing values based on Mode/Median rankings.",
-            "",
-            "### 3. Molecular Biology (ID = 69)",
-            "- **DNA Sequence Protection**: Correctly classified the long nucleotide sequence columns as `DNA Sequence`.",
-            "- **Exact Preservation**: Verified that no spacing standardizations, downcasting, or parsing were accidentally performed on DNA columns. Sequences remain 100% identical.",
-            "",
-            "## Verdict",
-            "Tidely has successfully passed the official UCI Machine Learning Validation campaign and is **production-ready**.",
-            "",
-        ]
-    )
+    report_lines.extend([
+        "",
+        "## Findings & Core Assertions Verified",
+        "",
+        "### 1. Wine Quality (ID = 186)",
+        "- **Numeric Precision**: Floating-point decimals preserved exactly.",
+        "- **Outlier Detection**: Median outlier clipping applied safely.",
+        "",
+        "### 2. Adult Income (ID = 2)",
+        "- **Missing Value Replacement**: Successfully scanned and replaced all custom null placeholders (`?`) with true nulls.",
+        "- **Automatic Imputation**: Auto-imputed the missing values based on Mode/Median rankings.",
+        "",
+        "### 3. Molecular Biology (ID = 69)",
+        "- **DNA Sequence Protection**: Correctly classified the long nucleotide sequence columns as `DNA Sequence`.",
+        "- **Exact Preservation**: Verified that no spacing standardizations, downcasting, or parsing were accidentally performed on DNA columns. Sequences remain 100% identical.",
+        "",
+        "## Verdict",
+        "Tidely has successfully passed the official UCI Machine Learning Validation campaign and is **production-ready**.",
+        "",
+    ])
 
     report_path = os.path.join(ARTIFACT_DIR, "uci_validation_report.md")
     with open(report_path, "w", encoding="utf-8") as f:

@@ -22,7 +22,9 @@ _HF_API = "https://datasets-server.huggingface.co"
 _NROWS = 200
 
 
-def _hf_streaming(repo: str, config: str | None = None, split: str = "train", nrows: int = _NROWS) -> pd.DataFrame | None:
+def _hf_streaming(
+    repo: str, config: str | None = None, split: str = "train", nrows: int = _NROWS
+) -> pd.DataFrame | None:
     """Load a small streaming subset from HuggingFace datasets."""
     try:
         from datasets import load_dataset  # type: ignore[import]
@@ -49,7 +51,9 @@ def _hf_streaming(repo: str, config: str | None = None, split: str = "train", nr
         return None
 
 
-def _hf_api_first_rows(dataset: str, config: str = "default", split: str = "train") -> pd.DataFrame | None:
+def _hf_api_first_rows(
+    dataset: str, config: str = "default", split: str = "train"
+) -> pd.DataFrame | None:
     """Load rows using the HuggingFace datasets-server first-rows API."""
     url = f"{_HF_API}/first-rows"
     try:
@@ -69,13 +73,21 @@ def _hf_api_first_rows(dataset: str, config: str = "default", split: str = "trai
         return None
 
 
-def _hf_api_rows(dataset: str, config: str, split: str, offset: int = 0, length: int = 100) -> pd.DataFrame | None:
+def _hf_api_rows(
+    dataset: str, config: str, split: str, offset: int = 0, length: int = 100
+) -> pd.DataFrame | None:
     """Load rows using the HuggingFace datasets-server rows API."""
     url = f"{_HF_API}/rows"
     try:
         resp = requests.get(
             url,
-            params={"dataset": dataset, "config": config, "split": split, "offset": offset, "length": length},
+            params={
+                "dataset": dataset,
+                "config": config,
+                "split": split,
+                "offset": offset,
+                "length": length,
+            },
             timeout=30,
         )
         resp.raise_for_status()
@@ -177,7 +189,9 @@ DATASETS: list[dict[str, Any]] = [
         "id": 7,
         "name": "mvp-lab/LLaVA-OneVision",
         "description": "LLaVA OneVision split metadata",
-        "loader": lambda: _hf_api_splits("mvp-lab/LLaVA-OneVision-1.5-Mid-Training-85M"),
+        "loader": lambda: _hf_api_splits(
+            "mvp-lab/LLaVA-OneVision-1.5-Mid-Training-85M"
+        ),
         "target": None,
         "keys": [],
     },
@@ -209,7 +223,9 @@ DATASETS: list[dict[str, Any]] = [
         "id": 11,
         "name": "HPLT/HPLT2.0_cleaned (ace_Arab rows)",
         "description": "HPLT 2.0 cleaned Arabic rows (API rows endpoint)",
-        "loader": lambda: _hf_api_rows("HPLT/HPLT2.0_cleaned", "ace_Arab", "train", offset=0, length=100),
+        "loader": lambda: _hf_api_rows(
+            "HPLT/HPLT2.0_cleaned", "ace_Arab", "train", offset=0, length=100
+        ),
         "target": None,
         "keys": [],
     },

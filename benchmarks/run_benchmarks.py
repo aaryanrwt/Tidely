@@ -38,28 +38,27 @@ def get_memory_mb():
 def generate_dirty_data(n_rows=100000):
     """Generate a synthetic dirty dataset for benchmarking."""
     np.random.seed(42)
-    df = pd.DataFrame(
-        {
-            "id": range(n_rows),
-            "age": np.random.randint(18, 90, size=n_rows).astype(float),
-            "email": [
-                f"user{i}@example.com" if np.random.rand() > 0.05 else "INVALID"
-                for i in range(n_rows)
-            ],
-            "status": np.random.choice(
-                ["active", "inactive", "pending", None], size=n_rows
-            ),
-            "signup_date": [
-                "2023-01-01" if np.random.rand() > 0.05 else "01/01/2023"
-                for _ in range(n_rows)
-            ],
-        }
-    )
+    df = pd.DataFrame({
+        "id": range(n_rows),
+        "age": np.random.randint(18, 90, size=n_rows).astype(float),
+        "email": [
+            f"user{i}@example.com" if np.random.rand() > 0.05 else "INVALID"
+            for i in range(n_rows)
+        ],
+        "status": np.random.choice(
+            ["active", "inactive", "pending", None], size=n_rows
+        ),
+        "signup_date": [
+            "2023-01-01" if np.random.rand() > 0.05 else "01/01/2023"
+            for _ in range(n_rows)
+        ],
+    })
     # Inject nulls
     df.loc[np.random.choice(n_rows, size=int(n_rows * 0.1)), "age"] = np.nan
     # Inject duplicates
     df = (
-        pd.concat([df, df.sample(int(n_rows * 0.05))])
+        pd
+        .concat([df, df.sample(int(n_rows * 0.05))])
         .sample(frac=1)
         .reset_index(drop=True)
     )
@@ -86,7 +85,8 @@ def benchmark_pyjanitor(df):
 
     # PyJanitor workflow
     cleaned_df = (
-        df.copy()
+        df
+        .copy()
         .drop_duplicates()
         .fill_empty(column_names=["age"], value=df["age"].median())
         .fill_empty(column_names=["status"], value="unknown")
@@ -105,15 +105,13 @@ def benchmark_pandera(df):
     start_mem = get_memory_mb()
 
     # Pandera workflow (Validation + minimal repair)
-    schema = pa.DataFrameSchema(
-        {
-            "id": pa.Column(int, nullable=False),
-            "age": pa.Column(float, nullable=True),
-            "email": pa.Column(str, nullable=False),
-            "status": pa.Column(str, nullable=True),
-            "signup_date": pa.Column(str, nullable=False),
-        }
-    )
+    schema = pa.DataFrameSchema({
+        "id": pa.Column(int, nullable=False),
+        "age": pa.Column(float, nullable=True),
+        "email": pa.Column(str, nullable=False),
+        "status": pa.Column(str, nullable=True),
+        "signup_date": pa.Column(str, nullable=False),
+    })
 
     try:
         # Drop duplicates manually first, as pandera is validation-first

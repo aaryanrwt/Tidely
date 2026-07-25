@@ -18,17 +18,15 @@ def single_row_df():
 @pytest.fixture
 def dirty_df():
     """Returns a DataFrame with common dirty patterns."""
-    return pd.DataFrame(
-        {
-            "id": [1, 2, 2, 3],
-            "name": ["Alice  ", "Bob", "Bob", "Charlie\u200b"],
-            "email": [
-                "ALICE@GMAIL.COM",
-                "bob@yahoo.com",
-                "bob@yahoo.com",
-                "charlie_no_domain",
-            ],
-            "is_active": ["Yes", "f", "f", "1"],
-            "age": [25, np.nan, np.nan, 30],
-        }
-    )
+    return pd.DataFrame({
+        "id": [1, 2, 2, 3],
+        "name": ["Alice  ", "Bob", "Bob", "Charlie\u200b"],
+        "email": [
+            "ALICE@GMAIL.COM",
+            "bob@yahoo.com",
+            "bob@yahoo.com",
+            "charlie_no_domain",
+        ],
+        "is_active": ["Yes", "f", "f", "1"],
+        "age": [25, np.nan, np.nan, 30],
+    })

@@ -10,11 +10,9 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from typing import Any
 
 import numpy as np
 import pandas as pd
-
 
 # ---------------------------------------------------------------------------
 # Individual cleaning operations
@@ -47,9 +45,8 @@ def _handle_missing_values(
             continue
         if col in keys or col == target:
             continue
-        if (
-            pd.api.types.is_numeric_dtype(out[col])
-            and not pd.api.types.is_bool_dtype(out[col])
+        if pd.api.types.is_numeric_dtype(out[col]) and not pd.api.types.is_bool_dtype(
+            out[col]
         ):
             fill_val = out[col].median()
             out[col] = out[col].fillna(fill_val if pd.notna(fill_val) else 0)
@@ -172,9 +169,8 @@ def _remove_outliers_iqr(
     for col in out.columns:
         if col in keys or col == target:
             continue
-        if (
-            pd.api.types.is_numeric_dtype(out[col])
-            and not pd.api.types.is_bool_dtype(out[col])
+        if pd.api.types.is_numeric_dtype(out[col]) and not pd.api.types.is_bool_dtype(
+            out[col]
         ):
             q1 = out[col].quantile(0.25)
             q3 = out[col].quantile(0.75)
@@ -205,7 +201,7 @@ def _replace_null_placeholders(df: pd.DataFrame) -> pd.DataFrame:
 def _fuzzy_dedup(df: pd.DataFrame, str_col: str, threshold: int = 95) -> pd.DataFrame:
     """Remove near-duplicate rows based on fuzzy string similarity in one column."""
     try:
-        from rapidfuzz import process, fuzz  # type: ignore[import]
+        from rapidfuzz import fuzz  # type: ignore[import]
     except ImportError:
         return df
 

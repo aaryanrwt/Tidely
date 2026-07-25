@@ -26,14 +26,12 @@ import tidely as td
 @pytest.fixture
 def sample_df() -> pd.DataFrame:
     """Sample DataFrame with dirty data for format round-tripping."""
-    return pd.DataFrame(
-        {
-            "id": [1, 2, 3, 4, 1],
-            "name": ["Alice", "Bob", "  Charlie  ", None, "Alice"],
-            "score": [95.5, 88.0, 72.3, None, 95.5],
-            "active": ["true", "false", "yes", "no", "true"],
-        }
-    )
+    return pd.DataFrame({
+        "id": [1, 2, 3, 4, 1],
+        "name": ["Alice", "Bob", "  Charlie  ", None, "Alice"],
+        "score": [95.5, 88.0, 72.3, None, 95.5],
+        "active": ["true", "false", "yes", "no", "true"],
+    })
 
 
 # ---------------------------------------------------------------------------

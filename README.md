@@ -135,6 +135,7 @@ df.to_csv("clean_data.csv", index=False)
 ### The 2-Line Tidely API
 ```python
 import tidely as td
+
 cleaned_df = td.clean("dirty_data.csv").df
 ```
 

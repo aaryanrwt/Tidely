@@ -31,16 +31,14 @@ def test_fuzz_i18n():
 
     # Generate 1000 random rows by sampling
     np.random.seed(42)
-    df = pd.DataFrame(
-        {
-            "toxic_col_1": np.random.choice(toxic_strings, 1000),
-            "toxic_col_2": np.random.choice(toxic_strings, 1000),
-            "numeric_mixed": np.random.choice([1, 2, "1", "2", np.nan, "NaN"], 1000),
-            "date_mixed": np.random.choice(
-                ["2020-01-01", "01/01/2020", "invalid", None, "2021-02-30"], 1000
-            ),
-        }
-    )
+    df = pd.DataFrame({
+        "toxic_col_1": np.random.choice(toxic_strings, 1000),
+        "toxic_col_2": np.random.choice(toxic_strings, 1000),
+        "numeric_mixed": np.random.choice([1, 2, "1", "2", np.nan, "NaN"], 1000),
+        "date_mixed": np.random.choice(
+            ["2020-01-01", "01/01/2020", "invalid", None, "2021-02-30"], 1000
+        ),
+    })
 
     try:
         res = td.clean(df)

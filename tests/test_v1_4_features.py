@@ -14,12 +14,10 @@ from tidely.core.streaming import StreamingEngine
 
 def test_profiler_extended_metrics() -> None:
     """Verifies that the DetectionEngine calculates density, memory, and cost correctly."""
-    df = pl.DataFrame(
-        {
-            "a": [1, 2, None, 4],
-            "b": ["x", "y", "z", "w"],
-        }
-    )
+    df = pl.DataFrame({
+        "a": [1, 2, None, 4],
+        "b": ["x", "y", "z", "w"],
+    })
     detector = DetectionEngine()
     meta = detector.analyze(df)
 
@@ -108,13 +106,11 @@ def test_sql_compilation() -> None:
 
 def test_duckdb_execution() -> None:
     """Verifies DuckDB execution of the compiled plan on in-memory data."""
-    df = pl.DataFrame(
-        {
-            "col1": [1.0, None, 3.0],
-            "col2": [-10, 50, 150],
-            "col3": ["a", "b", "c"],
-        }
-    )
+    df = pl.DataFrame({
+        "col1": [1.0, None, 3.0],
+        "col2": [-10, 50, 150],
+        "col3": ["a", "b", "c"],
+    })
 
     def dummy_rule(df: pl.DataFrame) -> pl.DataFrame:
         return df
@@ -162,12 +158,10 @@ def test_chunked_streaming() -> None:
     # Write a dirty file
     with tempfile.TemporaryDirectory() as tmpdir:
         csv_path = os.path.join(tmpdir, "test.csv")
-        df = pl.DataFrame(
-            {
-                "col1": [1.0, None, 3.0, None, 5.0],
-                "col2": ["foo", "bar", "foo", "baz", "foo"],
-            }
-        )
+        df = pl.DataFrame({
+            "col1": [1.0, None, 3.0, None, 5.0],
+            "col2": ["foo", "bar", "foo", "baz", "foo"],
+        })
         df.write_csv(csv_path)
 
         # Impute missing values with median (3.0)

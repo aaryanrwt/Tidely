@@ -252,13 +252,11 @@ def test_clean_polars_dataframe():
 
 def test_clean_result_extended_metadata(tmp_path):
     """Exposes all new CleanResult properties and formats them in the summary."""
-    df = pl.DataFrame(
-        {
-            "customer_id": ["C001", "C002", "C001"],
-            "name": ["Alice", "Bob", "Alice"],
-            "subscription_date": ["2026-06-30", "2026-07-01", "2026-06-30"],
-        }
-    )
+    df = pl.DataFrame({
+        "customer_id": ["C001", "C002", "C001"],
+        "name": ["Alice", "Bob", "Alice"],
+        "subscription_date": ["2026-06-30", "2026-07-01", "2026-06-30"],
+    })
     result = td.clean(df)
     assert isinstance(result.health_before, int)
     assert isinstance(result.health_after, int)
@@ -358,14 +356,12 @@ def test_universal_loader_and_intelligent_features(tmp_path):
 
 def test_semantic_intelligence_correctness():
     """Classifier correctly maps first_name/last_name to Name, dates to Date, and other business items."""
-    df = pl.DataFrame(
-        {
-            "first_name": ["Alice", "Bob", "Charlie"],
-            "subscription_date": ["2026-06-30", "2026-07-01", "2026-06-25"],
-            "vin_code": ["1HGCR2F83HA000000", "1HGCR2F83HA111111", "1HGCR2F83HA222222"],
-            "customer_id": ["C1001", "C1002", "C1003"],
-        }
-    )
+    df = pl.DataFrame({
+        "first_name": ["Alice", "Bob", "Charlie"],
+        "subscription_date": ["2026-06-30", "2026-07-01", "2026-06-25"],
+        "vin_code": ["1HGCR2F83HA000000", "1HGCR2F83HA111111", "1HGCR2F83HA222222"],
+        "customer_id": ["C1001", "C1002", "C1003"],
+    })
     # profile semantic types
     profile = td.inspect(df)
     sem = profile.semantic_types

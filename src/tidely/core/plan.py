@@ -387,7 +387,8 @@ def plan(data: Any) -> RepairPlan:
             try:
                 placeholders = ["?", "N/A", "n/a", "null", "NULL", "NaN", "nan"]
                 placeholder_count = df.select(
-                    pl.col(col)
+                    pl
+                    .col(col)
                     .cast(pl.String)
                     .str.strip_chars()
                     .is_in(placeholders)
@@ -428,9 +429,11 @@ def plan(data: Any) -> RepairPlan:
                 null_correlations=null_corrs,
             )
 
-            column_diagnostics[col]["algorithms_considered"].extend(
-                ["Mean Imputation", "Median Imputation", "Mode Imputation"]
-            )
+            column_diagnostics[col]["algorithms_considered"].extend([
+                "Mean Imputation",
+                "Median Imputation",
+                "Mode Imputation",
+            ])
 
             if strategy == "impute_group_median":
                 group_col = params["group_column"]
@@ -645,9 +648,11 @@ def plan(data: Any) -> RepairPlan:
                 kurtosis=kurt_val,
             )
 
-            column_diagnostics[col]["algorithms_considered"].extend(
-                ["IQR Clipping", "Z-Score Clipping", "Modified Z-Score Clipping"]
-            )
+            column_diagnostics[col]["algorithms_considered"].extend([
+                "IQR Clipping",
+                "Z-Score Clipping",
+                "Modified Z-Score Clipping",
+            ])
 
             if outlier_strat == "iqr":
                 q1 = df.select(pl.col(col).quantile(0.25)).item()

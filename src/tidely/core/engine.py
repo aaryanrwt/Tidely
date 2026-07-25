@@ -204,15 +204,13 @@ def run_pipeline(data: Any) -> CleanResult:
 
     # We retrieve the actions from the plan
     for action in p.actions:
-        autofixes.append(
-            {
-                "category": action.category,
-                "column": getattr(action, "column", ""),
-                "why": action.why_it_changed,
-                "impact": action.what_changed,
-                "confidence": int(action.confidence * 100),
-            }
-        )
+        autofixes.append({
+            "category": action.category,
+            "column": getattr(action, "column", ""),
+            "why": action.why_it_changed,
+            "impact": action.what_changed,
+            "confidence": int(action.confidence * 100),
+        })
 
     # Generate warnings for anything left uncleaned
     for col, info in semantics_final.items():
@@ -220,14 +218,12 @@ def run_pipeline(data: Any) -> CleanResult:
             info["type"] == "Unknown"
             and metadata_final["columns"][col]["null_count"] > 0
         ):
-            warnings.append(
-                {
-                    "category": "Missing Values",
-                    "column": col,
-                    "confidence": int(info["confidence"] * 100),
-                    "why": f"Column '{col}' contains un-imputed missing values with unknown semantic type.",
-                }
-            )
+            warnings.append({
+                "category": "Missing Values",
+                "column": col,
+                "confidence": int(info["confidence"] * 100),
+                "why": f"Column '{col}' contains un-imputed missing values with unknown semantic type.",
+            })
 
     orig_h = (
         df_initial_for_tracker.height
@@ -240,9 +236,9 @@ def run_pipeline(data: Any) -> CleanResult:
         else 0
     )
     rows_removed = max(0, orig_h - clean_h)
-    columns_modified = len(
-        {action.column for action in p.actions if getattr(action, "column", "")}
-    )
+    columns_modified = len({
+        action.column for action in p.actions if getattr(action, "column", "")
+    })
 
     missing_values_fixed = sum(
         action.rows_affected

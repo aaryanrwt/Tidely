@@ -26,16 +26,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 @pytest.fixture
 def small_df() -> pd.DataFrame:
     """Tiny synthetic dataset with common data quality issues."""
-    return pd.DataFrame(
-        {
-            "id": [1, 2, 3, 4, 1],  # row 4 is exact duplicate of row 0 (id=1)
-            "name": ["Alice", "Bob", None, "  Dave  ", "Alice"],
-            "age": [25, None, 35, 999.0, 25],  # 999 is an outlier
-            "score": [0.9, 0.7, None, 0.5, 0.9],
-            "category": ["A", "b", "A", "N/A", "A"],
-            "active": ["true", "false", "yes", "no", "true"],
-        }
-    )
+    return pd.DataFrame({
+        "id": [1, 2, 3, 4, 1],  # row 4 is exact duplicate of row 0 (id=1)
+        "name": ["Alice", "Bob", None, "  Dave  ", "Alice"],
+        "age": [25, None, 35, 999.0, 25],  # 999 is an outlier
+        "score": [0.9, 0.7, None, 0.5, 0.9],
+        "category": ["A", "b", "A", "N/A", "A"],
+        "active": ["true", "false", "yes", "no", "true"],
+    })
 
 
 @pytest.fixture
@@ -281,16 +279,14 @@ class TestEngineSmoke:
             w = csv.writer(f)
             w.writerow(headers)
             for i in range(50):
-                w.writerow(
-                    [
-                        i,
-                        "".join(random.choices(string.ascii_lowercase, k=6))
-                        if random.random() > 0.1
-                        else "",
-                        round(random.gauss(50, 15), 2) if random.random() > 0.1 else "",
-                        random.choice(["A", "B", "C", "N/A", ""]),
-                    ]
-                )
+                w.writerow([
+                    i,
+                    "".join(random.choices(string.ascii_lowercase, k=6))
+                    if random.random() > 0.1
+                    else "",
+                    round(random.gauss(50, 15), 2) if random.random() > 0.1 else "",
+                    random.choice(["A", "B", "C", "N/A", ""]),
+                ])
 
         ds_info = {
             "id": 99,

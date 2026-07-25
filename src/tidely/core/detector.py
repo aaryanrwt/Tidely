@@ -269,12 +269,10 @@ class DetectionEngine:
                                     corrs[other] = float(val)
                             metadata["columns"][col]["null_correlations"] = corrs
                     else:
-                        null_df = df.head(sample_len).select(
-                            [
-                                pl.col(c).is_null().cast(pl.Int32).alias(c)
-                                for c in cols_with_nulls
-                            ]
-                        )
+                        null_df = df.head(sample_len).select([
+                            pl.col(c).is_null().cast(pl.Int32).alias(c)
+                            for c in cols_with_nulls
+                        ])
                         import warnings
 
                         with warnings.catch_warnings():

@@ -13,7 +13,6 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
 logger = logging.getLogger("tidely.benchmark.validator")
@@ -29,6 +28,7 @@ class ValidationResult:
     mismatches: list[dict[str, Any]] = field(default_factory=list)
 
     def summary(self) -> str:
+        """Return a formatted validation summary string."""
         status = "PASS" if self.passed else "FAIL"
         n_fail = sum(1 for v in self.checks.values() if not v)
         return f"[{status}] {self.dataset_name}: {len(self.checks)} checks, {n_fail} failed"
@@ -63,17 +63,14 @@ def validate_equivalence(
     ) -> None:
         checks[check] = passed
         if not passed:
-            mismatches.append(
-                {
-                    "check": check,
-                    "expected": str(expected),
-                    "actual": str(actual),
-                    "scientific_justification": justification,
-                }
-            )
+            mismatches.append({
+                "check": check,
+                "expected": str(expected),
+                "actual": str(actual),
+                "scientific_justification": justification,
+            })
 
     # 1. Row count
-    raw_rows = len(raw)
     trad_rows = len(traditional)
     tide_rows = len(tidely)
     # Tidely may remove more or fewer rows — within 10% of traditional is acceptable

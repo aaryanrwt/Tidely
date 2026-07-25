@@ -93,20 +93,18 @@ class CleaningExecutor:
                         df[col]
                         .astype(str)
                         .str.lower()
-                        .map(
-                            {
-                                "true": True,
-                                "yes": True,
-                                "1": True,
-                                "y": True,
-                                "t": True,
-                                "false": False,
-                                "no": False,
-                                "0": False,
-                                "n": False,
-                                "f": False,
-                            }
-                        )
+                        .map({
+                            "true": True,
+                            "yes": True,
+                            "1": True,
+                            "y": True,
+                            "t": True,
+                            "false": False,
+                            "no": False,
+                            "0": False,
+                            "n": False,
+                            "f": False,
+                        })
                         .fillna(df[col])
                     )  # Fallback to original if not matched
 

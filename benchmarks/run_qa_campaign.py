@@ -139,51 +139,43 @@ def main():
 
             status = "SUCCESS" if not issues else f"FAILED ({', '.join(issues)})"
             if issues:
-                bugs_found.append(
-                    {
-                        "dataset": filename,
-                        "severity": "Medium",
-                        "description": f"Functional validation failures: {', '.join(issues)}",
-                        "root_cause": "Imputer or deduplication rule did not clean all columns properly due to mixed type presence or edge cases.",
-                    }
-                )
-
-            results.append(
-                {
+                bugs_found.append({
                     "dataset": filename,
-                    "rows": initial_rows,
-                    "cols": initial_cols,
-                    "duration_ms": duration,
-                    "mem_mb": mem_overhead,
-                    "initial_health": initial_score,
-                    "final_health": result.report.get("final_health", 98),
-                    "status": status,
-                }
-            )
+                    "severity": "Medium",
+                    "description": f"Functional validation failures: {', '.join(issues)}",
+                    "root_cause": "Imputer or deduplication rule did not clean all columns properly due to mixed type presence or edge cases.",
+                })
+
+            results.append({
+                "dataset": filename,
+                "rows": initial_rows,
+                "cols": initial_cols,
+                "duration_ms": duration,
+                "mem_mb": mem_overhead,
+                "initial_health": initial_score,
+                "final_health": result.report.get("final_health", 98),
+                "status": status,
+            })
 
         except Exception as e:
             tb = traceback.format_exc()
             print(f"[{filename}] Crashed:\n{tb}")
-            bugs_found.append(
-                {
-                    "dataset": filename,
-                    "severity": "Critical",
-                    "description": str(e),
-                    "root_cause": tb,
-                }
-            )
-            results.append(
-                {
-                    "dataset": filename,
-                    "rows": 0,
-                    "cols": 0,
-                    "duration_ms": 0.0,
-                    "mem_mb": 0.0,
-                    "initial_health": 0,
-                    "final_health": 0,
-                    "status": f"CRASHED ({type(e).__name__})",
-                }
-            )
+            bugs_found.append({
+                "dataset": filename,
+                "severity": "Critical",
+                "description": str(e),
+                "root_cause": tb,
+            })
+            results.append({
+                "dataset": filename,
+                "rows": 0,
+                "cols": 0,
+                "duration_ms": 0.0,
+                "mem_mb": 0.0,
+                "initial_health": 0,
+                "final_health": 0,
+                "status": f"CRASHED ({type(e).__name__})",
+            })
 
     # Write the QA report
     report_lines = [
@@ -211,27 +203,23 @@ def main():
         )
     else:
         for idx, bug in enumerate(bugs_found, start=1):
-            report_lines.extend(
-                [
-                    f"### Bug {idx}: {bug['dataset']}",
-                    f"- **Severity**: {bug['severity']}",
-                    f"- **Description**: {bug['description']}",
-                    "- **Root Cause & Traceback**:",
-                    "```python",
-                    f"{bug['root_cause']}",
-                    "```",
-                    "",
-                ]
-            )
+            report_lines.extend([
+                f"### Bug {idx}: {bug['dataset']}",
+                f"- **Severity**: {bug['severity']}",
+                f"- **Description**: {bug['description']}",
+                "- **Root Cause & Traceback**:",
+                "```python",
+                f"{bug['root_cause']}",
+                "```",
+                "",
+            ])
 
-    report_lines.extend(
-        [
-            "",
-            "## Final Reliability Verdict",
-            "Tidely is **production-ready**. 100% of real-world datasets scan, clean, and profile without memory leaks or unhandled exceptions.",
-            "",
-        ]
-    )
+    report_lines.extend([
+        "",
+        "## Final Reliability Verdict",
+        "Tidely is **production-ready**. 100% of real-world datasets scan, clean, and profile without memory leaks or unhandled exceptions.",
+        "",
+    ])
 
     with open(
         os.path.join(ARTIFACT_DIR, "qa_reliability_report.md"), "w", encoding="utf-8"

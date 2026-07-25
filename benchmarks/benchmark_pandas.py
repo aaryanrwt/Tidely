@@ -8,18 +8,16 @@ import tidely as td
 
 def generate_large_dataset(rows=1_000_000):
     """Generates a large dataset for benchmarking."""
-    return pd.DataFrame(
-        {
-            "id": np.random.randint(0, 1000000, size=rows),
-            "name": [" User \u200b "] * rows,
-            "email": ["USER@DOMAIN.COM"] * rows,
-            "is_active": (["Yes", "No", "True", "False", "t", "f"] * (rows // 6 + 1))[
-                :rows
-            ],
-            "category": (["A", "B", "C", "D"] * (rows // 4 + 1))[:rows],
-            "val": np.random.randn(rows),
-        }
-    )
+    return pd.DataFrame({
+        "id": np.random.randint(0, 1000000, size=rows),
+        "name": [" User \u200b "] * rows,
+        "email": ["USER@DOMAIN.COM"] * rows,
+        "is_active": (["Yes", "No", "True", "False", "t", "f"] * (rows // 6 + 1))[
+            :rows
+        ],
+        "category": (["A", "B", "C", "D"] * (rows // 4 + 1))[:rows],
+        "val": np.random.randn(rows),
+    })
 
 
 def benchmark_pandas(df):
@@ -41,20 +39,18 @@ def benchmark_pandas(df):
         df["is_active"]
         .astype(str)
         .str.lower()
-        .map(
-            {
-                "true": True,
-                "yes": True,
-                "1": True,
-                "y": True,
-                "t": True,
-                "false": False,
-                "no": False,
-                "0": False,
-                "n": False,
-                "f": False,
-            }
-        )
+        .map({
+            "true": True,
+            "yes": True,
+            "1": True,
+            "y": True,
+            "t": True,
+            "false": False,
+            "no": False,
+            "0": False,
+            "n": False,
+            "f": False,
+        })
         .fillna(df["is_active"])
     )
 

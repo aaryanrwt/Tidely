@@ -210,7 +210,8 @@ def make_unicode_clean_rule(column: str) -> Callable[[pl.DataFrame], pl.DataFram
 
     def _rule(df: pl.DataFrame) -> pl.DataFrame:
         return df.with_columns(
-            pl.col(column)
+            pl
+            .col(column)
             .cast(pl.String)
             .str.normalize_unicode()
             .str.replace_all(r"\s+", " ")
@@ -227,7 +228,8 @@ def make_zip_code_rule(column: str) -> Callable[[pl.DataFrame], pl.DataFrame]:
 
     def _rule(df: pl.DataFrame) -> pl.DataFrame:
         return df.with_columns(
-            pl.col(column)
+            pl
+            .col(column)
             .cast(pl.String)
             .str.strip_chars()
             .str.pad_start(5, fill_char="0")
@@ -259,8 +261,10 @@ def make_replace_null_placeholders_rule(
     def _rule(df: pl.DataFrame) -> pl.DataFrame:
         # Cast to string safely, strip whitespace, and replace placeholder values with None/Null
         return df.with_columns(
-            pl.when(
-                pl.col(column)
+            pl
+            .when(
+                pl
+                .col(column)
                 .cast(pl.String)
                 .str.strip_chars()
                 .is_in(["?", "N/A", "n/a", "null", "NULL", "NaN", "nan"])
@@ -286,7 +290,8 @@ def make_impute_group_median_rule(
             if g_med is None:
                 return df
             return df.with_columns(
-                pl.col(column)
+                pl
+                .col(column)
                 .fill_null(pl.col(column).median().over(group_column))
                 .fill_null(g_med)
             )
@@ -312,7 +317,8 @@ def make_impute_group_mode_rule(
                 )
                 return df.with_columns(pl.col(column).fill_null(mode_filler))
             mode_df = (
-                df.group_by([group_column, column])
+                df
+                .group_by([group_column, column])
                 .count()
                 .sort([group_column, "count"], descending=True)
                 .unique(subset=[group_column])
@@ -427,7 +433,8 @@ def make_smart_string_clean_rule(column: str) -> Callable[[pl.DataFrame], pl.Dat
     def _rule(df: pl.DataFrame) -> pl.DataFrame:
         try:
             return df.with_columns(
-                pl.col(column)
+                pl
+                .col(column)
                 .cast(pl.String)
                 .str.normalize_unicode()
                 .str.replace_all(r"[\u200B-\u200D\uFEFF]", "")
@@ -511,7 +518,8 @@ def make_smart_categorical_rule(column: str) -> Callable[[pl.DataFrame], pl.Data
             )
             if unique_list and all(str(v) in boolean_map for v in unique_list):
                 return df.with_columns(
-                    pl.col(column)
+                    pl
+                    .col(column)
                     .cast(pl.String)
                     .str.strip_chars()
                     .str.to_lowercase()
@@ -520,7 +528,8 @@ def make_smart_categorical_rule(column: str) -> Callable[[pl.DataFrame], pl.Data
                 )
             else:
                 return df.with_columns(
-                    pl.col(column)
+                    pl
+                    .col(column)
                     .cast(pl.String)
                     .str.strip_chars()
                     .str.to_lowercase()
@@ -545,7 +554,8 @@ def make_smart_numeric_clean_rule(
             cleaned = cleaned.str.replace_all(r"[\$\€\£\¥\s]", "")
             cleaned = cleaned.str.replace_all(r",", "")
             is_pct = df.select(
-                pl.col(column)
+                pl
+                .col(column)
                 .cast(pl.String)
                 .str.strip_chars()
                 .str.ends_with("%")

@@ -83,21 +83,19 @@ def main():
         try:
             with open(filepath, encoding="utf-8") as f:
                 data = json.load(f)
-            records.append(
-                {
-                    "episode_id": data["info"]["EpisodeId"],
-                    "description": data["description"],
-                    "module_version": data["module_version"],
-                    "reward_agent_0": data["rewards"][0],
-                    "reward_agent_1": data["rewards"][1],
-                    "status_agent_0": data["statuses"][0],
-                    "status_agent_1": data["statuses"][1],
-                    "seed": data["configuration"]["seed"],
-                    "steps": len(data["steps"]),
-                    "agent_0_name": data["info"]["Agents"][0]["Name"],
-                    "agent_1_name": data["info"]["Agents"][1]["Name"],
-                }
-            )
+            records.append({
+                "episode_id": data["info"]["EpisodeId"],
+                "description": data["description"],
+                "module_version": data["module_version"],
+                "reward_agent_0": data["rewards"][0],
+                "reward_agent_1": data["rewards"][1],
+                "status_agent_0": data["statuses"][0],
+                "status_agent_1": data["statuses"][1],
+                "seed": data["configuration"]["seed"],
+                "steps": len(data["steps"]),
+                "agent_0_name": data["info"]["Agents"][0]["Name"],
+                "agent_1_name": data["info"]["Agents"][1]["Name"],
+            })
         except Exception as e:
             print(f"Error parsing {filepath}: {e}")
 
@@ -121,36 +119,34 @@ def main():
         corr_pk = generate_corrupted_df(pokemon_df)
         td.clean(corr_pk)
 
-        results.append(
-            {
-                "name": "Pokemon TCG Battles",
-                "rows": len(pokemon_df),
-                "cols": len(pokemon_df.columns),
-                "latency_ms": (time.time() - t_start) * 1000,
-                "mem_mb": max(0.0, get_mem_mb() - mem_start),
-                "initial_health": profile_pk.trust_score.overall,
-                "final_health": res_pk.report["final_health"],
-                "status": "SUCCESS",
-            }
-        )
+        results.append({
+            "name": "Pokemon TCG Battles",
+            "rows": len(pokemon_df),
+            "cols": len(pokemon_df.columns),
+            "latency_ms": (time.time() - t_start) * 1000,
+            "mem_mb": max(0.0, get_mem_mb() - mem_start),
+            "initial_health": profile_pk.trust_score.overall,
+            "final_health": res_pk.report["final_health"],
+            "status": "SUCCESS",
+        })
     except Exception as e:
         tb = traceback.format_exc()
         print(f"Pokemon TCG crashed:\n{tb}")
-        bugs_found.append(
-            {"dataset": "Pokemon TCG Battles", "error": str(e), "traceback": tb}
-        )
-        results.append(
-            {
-                "name": "Pokemon TCG Battles",
-                "rows": len(pokemon_df),
-                "cols": len(pokemon_df.columns),
-                "latency_ms": 0,
-                "mem_mb": 0,
-                "initial_health": 0,
-                "final_health": 0,
-                "status": "FAILED",
-            }
-        )
+        bugs_found.append({
+            "dataset": "Pokemon TCG Battles",
+            "error": str(e),
+            "traceback": tb,
+        })
+        results.append({
+            "name": "Pokemon TCG Battles",
+            "rows": len(pokemon_df),
+            "cols": len(pokemon_df.columns),
+            "latency_ms": 0,
+            "mem_mb": 0,
+            "initial_health": 0,
+            "final_health": 0,
+            "status": "FAILED",
+        })
 
     # ----------------------------------------------------
     # Dataset 2: VGG16 Class Index
@@ -186,36 +182,34 @@ def main():
         corr_vgg = generate_corrupted_df(vgg_df)
         td.clean(corr_vgg)
 
-        results.append(
-            {
-                "name": "VGG16 ImageNet Index",
-                "rows": len(vgg_df),
-                "cols": len(vgg_df.columns),
-                "latency_ms": (time.time() - t_start) * 1000,
-                "mem_mb": max(0.0, get_mem_mb() - mem_start),
-                "initial_health": profile_vgg.trust_score.overall,
-                "final_health": res_vgg.report["final_health"],
-                "status": "SUCCESS",
-            }
-        )
+        results.append({
+            "name": "VGG16 ImageNet Index",
+            "rows": len(vgg_df),
+            "cols": len(vgg_df.columns),
+            "latency_ms": (time.time() - t_start) * 1000,
+            "mem_mb": max(0.0, get_mem_mb() - mem_start),
+            "initial_health": profile_vgg.trust_score.overall,
+            "final_health": res_vgg.report["final_health"],
+            "status": "SUCCESS",
+        })
     except Exception as e:
         tb = traceback.format_exc()
         print(f"VGG16 crashed:\n{tb}")
-        bugs_found.append(
-            {"dataset": "VGG16 ImageNet Index", "error": str(e), "traceback": tb}
-        )
-        results.append(
-            {
-                "name": "VGG16 ImageNet Index",
-                "rows": len(vgg_df),
-                "cols": len(vgg_df.columns),
-                "latency_ms": 0,
-                "mem_mb": 0,
-                "initial_health": 0,
-                "final_health": 0,
-                "status": "FAILED",
-            }
-        )
+        bugs_found.append({
+            "dataset": "VGG16 ImageNet Index",
+            "error": str(e),
+            "traceback": tb,
+        })
+        results.append({
+            "name": "VGG16 ImageNet Index",
+            "rows": len(vgg_df),
+            "cols": len(vgg_df.columns),
+            "latency_ms": 0,
+            "mem_mb": 0,
+            "initial_health": 0,
+            "final_health": 0,
+            "status": "FAILED",
+        })
 
     # ----------------------------------------------------
     # Dataset 3: IMDb Movie Reviews
@@ -256,36 +250,34 @@ def main():
         )  # Stress test on subset for speed
         td.clean(corr_imdb)
 
-        results.append(
-            {
-                "name": "IMDb Movie Reviews",
-                "rows": len(imdb_df),
-                "cols": len(imdb_df.columns),
-                "latency_ms": (time.time() - t_start) * 1000,
-                "mem_mb": max(0.0, get_mem_mb() - mem_start),
-                "initial_health": profile_imdb.trust_score.overall,
-                "final_health": res_imdb.report["final_health"],
-                "status": "SUCCESS",
-            }
-        )
+        results.append({
+            "name": "IMDb Movie Reviews",
+            "rows": len(imdb_df),
+            "cols": len(imdb_df.columns),
+            "latency_ms": (time.time() - t_start) * 1000,
+            "mem_mb": max(0.0, get_mem_mb() - mem_start),
+            "initial_health": profile_imdb.trust_score.overall,
+            "final_health": res_imdb.report["final_health"],
+            "status": "SUCCESS",
+        })
     except Exception as e:
         tb = traceback.format_exc()
         print(f"IMDb crashed:\n{tb}")
-        bugs_found.append(
-            {"dataset": "IMDb Movie Reviews", "error": str(e), "traceback": tb}
-        )
-        results.append(
-            {
-                "name": "IMDb Movie Reviews",
-                "rows": len(imdb_df),
-                "cols": len(imdb_df.columns),
-                "latency_ms": 0,
-                "mem_mb": 0,
-                "initial_health": 0,
-                "final_health": 0,
-                "status": "FAILED",
-            }
-        )
+        bugs_found.append({
+            "dataset": "IMDb Movie Reviews",
+            "error": str(e),
+            "traceback": tb,
+        })
+        results.append({
+            "name": "IMDb Movie Reviews",
+            "rows": len(imdb_df),
+            "cols": len(imdb_df.columns),
+            "latency_ms": 0,
+            "mem_mb": 0,
+            "initial_health": 0,
+            "final_health": 0,
+            "status": "FAILED",
+        })
 
     # ----------------------------------------------------
     # Report compilation
@@ -304,28 +296,26 @@ def main():
             f"| {r['name']} | {r['rows']:,} | {r['cols']} | {r['latency_ms']:.1f} ms | {r['mem_mb']:.1f} MB | {r['initial_health']}% | {r['final_health']}% | {r['status']} |"
         )
 
-    report_lines.extend(
-        [
-            "",
-            "## Domain Specific Checks & Stress-Testing Results",
-            "",
-            "### 1. Pokemon TCG Battles",
-            "- **Validation Check**: Verified nesting and JSON parser.",
-            "- **Stress Check**: Passed successfully under duplicate column names and random null injections.",
-            "",
-            "### 2. VGG16 ImageNet Index",
-            "- **Validation Check**: Verified image labels, ids, and file paths.",
-            "- **Stress Check**: Handled duplicate headers and whitespace-only cells.",
-            "",
-            "### 3. IMDb Movie Reviews",
-            "- **Validation Check**: Verified that accented characters, foreign text scripts, and emoji within reviews are fully intact.",
-            "- **Integrity Verification**: Checked that 0 reviews were altered or corrupted.",
-            "- **Stress Check**: Standardized inputs containing broken UTF-8 and Latin-1 characters.",
-            "",
-            "## Bugs Found & Fixed",
-            "",
-        ]
-    )
+    report_lines.extend([
+        "",
+        "## Domain Specific Checks & Stress-Testing Results",
+        "",
+        "### 1. Pokemon TCG Battles",
+        "- **Validation Check**: Verified nesting and JSON parser.",
+        "- **Stress Check**: Passed successfully under duplicate column names and random null injections.",
+        "",
+        "### 2. VGG16 ImageNet Index",
+        "- **Validation Check**: Verified image labels, ids, and file paths.",
+        "- **Stress Check**: Handled duplicate headers and whitespace-only cells.",
+        "",
+        "### 3. IMDb Movie Reviews",
+        "- **Validation Check**: Verified that accented characters, foreign text scripts, and emoji within reviews are fully intact.",
+        "- **Integrity Verification**: Checked that 0 reviews were altered or corrupted.",
+        "- **Stress Check**: Standardized inputs containing broken UTF-8 and Latin-1 characters.",
+        "",
+        "## Bugs Found & Fixed",
+        "",
+    ])
 
     if not bugs_found:
         report_lines.append(
@@ -333,26 +323,22 @@ def main():
         )
     else:
         for idx, bug in enumerate(bugs_found, start=1):
-            report_lines.extend(
-                [
-                    f"### Bug {idx}: {bug['dataset']}",
-                    f"- **Error Message**: {bug['error']}",
-                    "- **Traceback**:",
-                    "```python",
-                    f"{bug['traceback']}",
-                    "```",
-                    "",
-                ]
-            )
+            report_lines.extend([
+                f"### Bug {idx}: {bug['dataset']}",
+                f"- **Error Message**: {bug['error']}",
+                "- **Traceback**:",
+                "```python",
+                f"{bug['traceback']}",
+                "```",
+                "",
+            ])
 
-    report_lines.extend(
-        [
-            "",
-            "## Final Verdict",
-            "Tidely v1.4.0 has successfully passed the Kaggle validation campaign and is **production-ready**.",
-            "",
-        ]
-    )
+    report_lines.extend([
+        "",
+        "## Final Verdict",
+        "Tidely v1.4.0 has successfully passed the Kaggle validation campaign and is **production-ready**.",
+        "",
+    ])
 
     report_path = os.path.join(ARTIFACT_DIR, "kaggle_validation_report.md")
     with open(report_path, "w", encoding="utf-8") as f:

@@ -250,14 +250,12 @@ class RepairPlan:
             try:
                 new_df = action.rule_fn(df)
             except Exception as e:
-                self.audit_log.append(
-                    {
-                        "category": action.category,
-                        "action": action.what_changed,
-                        "status": "FAILED",
-                        "error": str(e),
-                    }
-                )
+                self.audit_log.append({
+                    "category": action.category,
+                    "action": action.what_changed,
+                    "status": "FAILED",
+                    "error": str(e),
+                })
                 continue
 
             rows_after = new_df.height
@@ -279,16 +277,14 @@ class RepairPlan:
 
             df = new_df
 
-            self.audit_log.append(
-                {
-                    "category": action.category,
-                    "action": action.what_changed,
-                    "reason": action.why_it_changed,
-                    "confidence": action.confidence,
-                    "rows_affected": action.rows_affected,
-                    "status": "SUCCESS",
-                }
-            )
+            self.audit_log.append({
+                "category": action.category,
+                "action": action.what_changed,
+                "reason": action.why_it_changed,
+                "confidence": action.confidence,
+                "rows_affected": action.rows_affected,
+                "status": "SUCCESS",
+            })
 
         if dry_run:
             print("Dry run completed. Original data remains unmodified.")

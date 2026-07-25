@@ -8,8 +8,8 @@ Usage:
 
 from __future__ import annotations
 
-import sys
 import os
+import sys
 
 # Ensure the project root is on the path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,7 +34,7 @@ def main() -> int:
 
     # Full or smoke-test run
     from benchmarks.engine import run_all
-    from benchmarks.reporter import generate_reports, check_regressions
+    from benchmarks.reporter import check_regressions, generate_reports
 
     results = run_all(smoke_test=smoke_test)
     generate_reports(results)
