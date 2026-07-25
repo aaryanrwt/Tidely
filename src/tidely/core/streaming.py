@@ -49,6 +49,7 @@ class StreamingEngine:
         if not isinstance(source, str):
             try:
                 import pandas as pd
+
                 if isinstance(source, pd.DataFrame):
                     conn.register(registered_name, source)
                 elif isinstance(source, pl.DataFrame):
@@ -72,7 +73,9 @@ class StreamingEngine:
         if output_filepath:
             ext = os.path.splitext(output_filepath)[1].lower()
             copy_format = "PARQUET" if ext == ".parquet" else "CSV"
-            copy_sql = f"COPY ({sql_query}) TO '{output_filepath}' (FORMAT {copy_format})"
+            copy_sql = (
+                f"COPY ({sql_query}) TO '{output_filepath}' (FORMAT {copy_format})"
+            )
             try:
                 conn.execute(copy_sql)
                 # Return a Polars LazyFrame pointing to the cleaned file so it doesn't load into RAM
@@ -106,9 +109,7 @@ class StreamingEngine:
                 res_df = res_df.rename(rename_map)
             return res_df
         except Exception as e:
-            raise RuntimeError(
-                f"DuckDB SQL query execution failed: {e}"
-            ) from e
+            raise RuntimeError(f"DuckDB SQL query execution failed: {e}") from e
 
     @staticmethod
     def clean_chunked_streaming(
@@ -160,6 +161,7 @@ class StreamingEngine:
 
         elif ext == ".parquet":
             import pyarrow.parquet as pq
+
             pf = pq.ParquetFile(filepath)  # type: ignore[no-untyped-call]
 
             # Create Parquet writer
@@ -191,7 +193,11 @@ class StreamingEngine:
 
         else:
             # Fall back to standard lazy evaluation if unsupported file format
-            pl_lazy = pl.scan_parquet(filepath) if ext == ".parquet" else pl.scan_csv(filepath)
+            pl_lazy = (
+                pl.scan_parquet(filepath)
+                if ext == ".parquet"
+                else pl.scan_csv(filepath)
+            )
             # We can't apply plan directly on LazyFrame if some rules use eager functions,
             # so we collect and clean (best effort)
             df = pl_lazy.collect()

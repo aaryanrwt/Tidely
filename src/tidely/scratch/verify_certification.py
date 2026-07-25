@@ -10,7 +10,9 @@ import traceback
 from typing import Any
 
 # Ensure we import tidely from the source tree
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../src")))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../src"))
+)
 
 import polars as pl
 
@@ -57,7 +59,11 @@ def run_campaign() -> dict[str, Any]:
     results: dict[str, Any] = {"datasets": {}, "fuzz_test": {}, "comparisons": {}}
 
     # Find all files, ignoring cleaned outputs
-    files = [f for f in os.listdir(DATA_DIR) if os.path.isfile(os.path.join(DATA_DIR, f)) and ".cleaned" not in f]
+    files = [
+        f
+        for f in os.listdir(DATA_DIR)
+        if os.path.isfile(os.path.join(DATA_DIR, f)) and ".cleaned" not in f
+    ]
     print(f"Found {len(files)} files to analyze.")
 
     for f in files:
@@ -72,7 +78,9 @@ def run_campaign() -> dict[str, Any]:
         # We will handle it by sampling or scanning
         is_xlsx = f.endswith(".xlsx") or f.endswith(".xls")
         if is_xlsx and size_mb > 50:
-            print("Skipping direct in-memory load for massive Excel sheet to avoid OOM. Profiling metadata only.")
+            print(
+                "Skipping direct in-memory load for massive Excel sheet to avoid OOM. Profiling metadata only."
+            )
             results["datasets"][f] = {
                 "filename": f,
                 "domain": domain,
@@ -96,6 +104,7 @@ def run_campaign() -> dict[str, Any]:
                 total_rows = pl.scan_parquet(filepath).select(pl.len()).collect().item()
             elif ext == ".arff":
                 from tidely.core.adapter import parse_arff
+
                 df_orig_pd = parse_arff(filepath)
                 df_orig = pl.from_pandas(df_orig_pd)
                 total_rows = df_orig.height
@@ -149,10 +158,16 @@ def run_campaign() -> dict[str, Any]:
                 "duration_seconds": duration,
                 "fixes_count": len(fixes),
                 "warnings_count": len(warnings),
-                "repaired_columns": [col for col, diag in col_diag.items() if diag.get("repair_score", 0) > 0],
+                "repaired_columns": [
+                    col
+                    for col, diag in col_diag.items()
+                    if diag.get("repair_score", 0) > 0
+                ],
                 "status": "Success",
             }
-            print(f"Success: trust score improved from {health_before:.0f}% to {health_after:.0f}% in {duration:.3f}s.")
+            print(
+                f"Success: trust score improved from {health_before:.0f}% to {health_after:.0f}% in {duration:.3f}s."
+            )
         except Exception as e:
             print(f"Error processing {f}: {e}")
             traceback.print_exc()
@@ -174,7 +189,9 @@ def run_campaign() -> dict[str, Any]:
             "Tidely v1.4": {
                 "code_required": "import tidely as td\nres = td.clean('y_amazon-google-large.csv')",
                 "automatic": True,
-                "runtime_seconds": results["datasets"].get("y_amazon-google-large.csv", {}).get("duration_seconds", 5.0),
+                "runtime_seconds": results["datasets"]
+                .get("y_amazon-google-large.csv", {})
+                .get("duration_seconds", 5.0),
                 "lines_of_code": 2,
                 "manual_work": "None",
             },
@@ -198,21 +215,32 @@ def run_campaign() -> dict[str, Any]:
                 "runtime_seconds": 0.45,
                 "lines_of_code": 50,
                 "manual_work": "Write nested SQL CTE queries manually handling COALESCE, CASE WHEN bounds, and REGEXP_REPLACE.",
-            }
+            },
         }
 
     # 3. Fuzz Testing Suite
     print("\nRunning random fuzz tests...")
     try:
         fuzz_data = {
-            "id": [f"ID_{i}" for i in range(100)] + [f"ID_{i}" for i in range(5)],  # duplicates
-            "email": [f"user_{i}@gmail.com" if i % 10 != 0 else "INVALID_EMAIL" for i in range(105)],
-            "phone": [f"+1-555-010{i}" if i % 10 != 0 else "broken_phone" for i in range(105)],
+            "id": [f"ID_{i}" for i in range(100)]
+            + [f"ID_{i}" for i in range(5)],  # duplicates
+            "email": [
+                f"user_{i}@gmail.com" if i % 10 != 0 else "INVALID_EMAIL"
+                for i in range(105)
+            ],
+            "phone": [
+                f"+1-555-010{i}" if i % 10 != 0 else "broken_phone" for i in range(105)
+            ],
             "zip": [str(random.randint(1000, 99999)) for _ in range(105)],
             "lat": [random.uniform(-100, 100) for _ in range(105)],
             "lon": [random.uniform(-200, 200) for _ in range(105)],
-            "dna": ["ATCGATCGATCG" if i % 5 != 0 else "broken_dna_sequence" for i in range(105)],
-            "null_col": [random.choice([None, random.uniform(0, 10)]) for _ in range(105)],
+            "dna": [
+                "ATCGATCGATCG" if i % 5 != 0 else "broken_dna_sequence"
+                for i in range(105)
+            ],
+            "null_col": [
+                random.choice([None, random.uniform(0, 10)]) for _ in range(105)
+            ],
         }
         fuzz_df = pl.DataFrame(fuzz_data)
         fuzz_res = td.clean(fuzz_df)
@@ -224,12 +252,11 @@ def run_campaign() -> dict[str, Any]:
             "final_health": fuzz_report.get("final_health", 0.0),
             "fixes": fuzz_report.get("fixes", []),
         }
-        print(f"Fuzz test success! Trust score improved from {fuzz_report.get('initial_health', 0.0):.0f}% to {fuzz_report.get('final_health', 0.0):.0f}%.")
+        print(
+            f"Fuzz test success! Trust score improved from {fuzz_report.get('initial_health', 0.0):.0f}% to {fuzz_report.get('final_health', 0.0):.0f}%."
+        )
     except Exception as e:
-        results["fuzz_test"] = {
-            "status": "Failed",
-            "error": str(e)
-        }
+        results["fuzz_test"] = {"status": "Failed", "error": str(e)}
         print(f"Fuzz test failed: {e}")
 
     # Save to file

@@ -59,16 +59,18 @@ class DecisionEngine:
         if dataset_size_bytes > available_ram * 0.5:
             self.selected_engine = "streaming"
             self.selected_reason = (
-                f"Dataset size ({dataset_size_bytes / (1024*1024):.1f} MB) exceeds 50% "
-                f"of available RAM ({available_ram / (1024*1024):.1f} MB). Routing to Out-of-Core Streaming."
+                f"Dataset size ({dataset_size_bytes / (1024 * 1024):.1f} MB) exceeds 50% "
+                f"of available RAM ({available_ram / (1024 * 1024):.1f} MB). Routing to Out-of-Core Streaming."
             )
             return "streaming"
 
         # Large files
-        if dataset_size_bytes > 50 * 1024 * 1024 and ("csv" in fmt_lower or "parquet" in fmt_lower):
+        if dataset_size_bytes > 50 * 1024 * 1024 and (
+            "csv" in fmt_lower or "parquet" in fmt_lower
+        ):
             self.selected_engine = "duckdb"
             self.selected_reason = (
-                f"Dataset size ({dataset_size_bytes / (1024*1024):.1f} MB) exceeds 50MB limit for "
+                f"Dataset size ({dataset_size_bytes / (1024 * 1024):.1f} MB) exceeds 50MB limit for "
                 f"in-memory processing. Routing to DuckDB query engine for out-of-core acceleration."
             )
             return "duckdb"
@@ -77,7 +79,7 @@ class DecisionEngine:
         if dataset_size_bytes > 10 * 1024 * 1024:
             self.selected_engine = "polars_lazy"
             self.selected_reason = (
-                f"Dataset size ({dataset_size_bytes / (1024*1024):.1f} MB) is between 10MB and 50MB. "
+                f"Dataset size ({dataset_size_bytes / (1024 * 1024):.1f} MB) is between 10MB and 50MB. "
                 "Routing to Polars Lazy evaluation for optimized query execution plan."
             )
             return "polars_lazy"
@@ -85,7 +87,7 @@ class DecisionEngine:
         # Small datasets
         self.selected_engine = "polars_eager"
         self.selected_reason = (
-            f"Dataset size ({dataset_size_bytes / (1024*1024):.1f} MB) fits comfortably in memory. "
+            f"Dataset size ({dataset_size_bytes / (1024 * 1024):.1f} MB) fits comfortably in memory. "
             "Routing to Polars Eager for low-latency in-memory execution."
         )
         return "polars_eager"
@@ -127,22 +129,43 @@ class DecisionEngine:
                     max_corr = abs(corr)
                     mar_col = col
             if mar_col is not None:
-                if "str" in dtype_lower or "object" in dtype_lower or "cat" in dtype_lower or "enum" in dtype_lower:
+                if (
+                    "str" in dtype_lower
+                    or "object" in dtype_lower
+                    or "cat" in dtype_lower
+                    or "enum" in dtype_lower
+                ):
                     return "impute_group_mode", {"group_column": mar_col}
                 else:
                     return "impute_group_median", {"group_column": mar_col}
 
         # Check for MNAR / Time-series
         col_lower = column_name.lower()
-        if "date" in col_lower or "time" in col_lower or "ts" in col_lower or "year" in col_lower:
+        if (
+            "date" in col_lower
+            or "time" in col_lower
+            or "ts" in col_lower
+            or "year" in col_lower
+        ):
             return "forward_fill", {}
 
         # If low cardinality and string
-        if "str" in dtype_lower or "object" in dtype_lower or "cat" in dtype_lower or "enum" in dtype_lower:
+        if (
+            "str" in dtype_lower
+            or "object" in dtype_lower
+            or "cat" in dtype_lower
+            or "enum" in dtype_lower
+        ):
             return "impute_mode", {"value": "Unknown"}
 
         # Numeric checks
-        if "int" in dtype_lower or "float" in dtype_lower or "num" in dtype_lower or "double" in dtype_lower or "real" in dtype_lower:
+        if (
+            "int" in dtype_lower
+            or "float" in dtype_lower
+            or "num" in dtype_lower
+            or "double" in dtype_lower
+            or "real" in dtype_lower
+        ):
             if "sklearn" in sys.modules and null_ratio > 0.05 and total_count > 1000:
                 # If sklearn is available, we can route to MICE/KNN
                 return "impute_mice", {}

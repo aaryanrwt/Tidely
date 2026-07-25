@@ -294,7 +294,7 @@ Tidely consists of the following core modules:
 
 ## 15. Technical Validation Campaign
 
-To guarantee production safety, Tidely v1.4.2 was audited against a rigorous technical validation suite:
+To guarantee production safety, Tidely v1.4.3 was audited against a rigorous technical validation suite:
 * **Fuzz & Edge-Case Testing**: Validated against corrupted encodings, duplicate headers, missing headers, scientific notation, and timezone anomalies.
 * **System Testing**: 100% test coverage verified across all Campaign datasets, including large stress tests up to 10,000,000 rows.
 * **Code Audits**: Checked for type safety ( strict MyPy compliance) and formatting style rules (Ruff check).
@@ -438,7 +438,8 @@ Yes. Tidely runs as a standard python package, making it easy to drop into any E
 
 ## 22. Version Roadmap
 
-* **v1.4.2 (Current Stable)**: Production hardening release — extensive loader, exporter, and semantic improvements, strict ML safety audits.
+* **v1.4.3 (Current Stable)**: Scientific Validation and Trust Audit release.
+* **v1.4.2**: Production hardening release — extensive loader, exporter, and semantic improvements, strict ML safety audits.
 * **v1.4.1**: Stability patch — test suite fixes, documentation accuracy, regression tests.
 * **v1.4.0**: DuckDB SQL query compiler, out-of-core streaming, resources-aware selection.
 * **v1.3**: Native ARFF parser, DNA protection rules, Polars fallback.
@@ -464,7 +465,87 @@ Yes. Tidely runs as a standard python package, making it easy to drop into any E
 
 ---
 
-## 24. License
+## 24. v1.5.0 — Performance Benchmark & Enterprise Validation
+
+### What's New in v1.5.0
+
+| Feature | Description |
+| :--- | :--- |
+| Sequential Benchmark Engine | Processes one dataset at a time — memory freed after each run |
+| Traditional Pipeline Baseline | pandas + polars + numpy + scikit-learn + RapidFuzz + pyarrow |
+| 12-Dataset HuggingFace Suite | Real-world streaming datasets from openai, mteb, apple, HPLT, Spawning, and more |
+| Equivalence Validator | 8+ automated checks per dataset — never silently accepts mismatches |
+| Regression Gate | CI fails if Tidely is >2× slower than the traditional pipeline |
+| Windows-Only CI | Python 3.12, 3.13, 3.14 on `windows-latest` |
+| `tidely[bench]` group | One-command benchmark dependency install |
+
+### Running the Benchmark
+
+```bash
+# Install with benchmark dependencies
+pip install tidely[bench]
+
+# Full benchmark (all 12 datasets, sequential)
+python benchmarks/run_benchmark.py
+
+# CI smoke test (2 datasets — fast)
+python benchmarks/run_benchmark.py --smoke-test
+
+# Check for regressions on existing results
+python benchmarks/run_benchmark.py --check-regression
+```
+
+### Benchmark Methodology
+
+- **Datasets**: 12 HuggingFace datasets loaded via streaming (200-row subsets) or datasets-server API
+- **Traditional pipeline**: 11 operations — null replacement, dedup, imputation (median/mode), whitespace, unicode NFC, categorical normalization, boolean normalization, datetime parsing, IQR outlier clipping, numeric downcasting, fuzzy dedup
+- **Tidely pipeline**: `td.clean(path)` — zero configuration
+- **Processing**: Sequential. One dataset at a time. `gc.collect()` between runs
+- **Timing**: `time.perf_counter()` wall-clock, excludes data loading
+- **RAM**: `psutil.Process.memory_info().rss` peak during cleaning
+- **Correctness**: Validated via 8+ automated equivalence checks per dataset
+
+### Benchmark Datasets
+
+| # | Dataset | Source | Method |
+| :- | :--- | :--- | :--- |
+| 1 | anisoleai/fineweb-tokenized | HuggingFace | Streaming |
+| 2 | huggingface/documentation-images | HuggingFace | Streaming |
+| 3 | openai/gsm8k (main) | HuggingFace | Streaming |
+| 4 | openai/gsm8k (socratic) | HuggingFace | Streaming |
+| 5 | mteb/results | HuggingFace | Streaming |
+| 6 | apple/DFNDR-2B | datasets-server API | first-rows |
+| 7 | mvp-lab/LLaVA-OneVision | datasets-server API | splits metadata |
+| 8 | LiLabUNC/Variant-Foundation-Embeddings | datasets-server API | first-rows |
+| 9 | Spawning/pd-extended | datasets-server API | first-rows |
+| 10 | InternRobotics/OmniWorld | HuggingFace | Streaming |
+| 11 | HPLT/HPLT2.0_cleaned (ace_Arab) | datasets-server API | rows endpoint |
+| 12 | HPLT/HPLT2.0_cleaned (ace_Arab) | HuggingFace API | parquet metadata |
+
+### Performance Optimizations
+
+| Area | Optimization |
+| :--- | :--- |
+| Polars→Polars | Zero-copy path in `adapter.py` — no pandas roundtrip |
+| Regex | Pre-compiled at `SemanticEngine.__init__` — no per-call recompilation |
+| Memory | Sequential benchmark enforces `gc.collect()` + `del` between datasets |
+| Expressions | Batched `with_columns` in cleaning rules where possible |
+
+---
+
+## 25. Roadmap
+
+| Version | Status | Focus |
+| :--- | :--- | :--- |
+| v1.5.0 | **Current Stable** | Enterprise benchmark suite, sequential processing, Windows-only CI, equivalence validator, regression gate |
+| v1.6.0 | Planned | Cleaning Contracts, immutable audit logs, `CleanResult.diff()`, Pandera integration |
+| v1.7.0 | Planned | Enterprise integrations — S3, GCS, Azure Blob, SQLAlchemy connector |
+| v1.8.0 | Planned | Domain-specific cleaners — geospatial, time series, NLP, financial |
+| v2.0.0 | Future | Distributed execution — Spark, Ray, Dask; cloud-native managed execution |
+
+---
+
+## 26. License
 
 Tidely is released under the [MIT License](LICENSE).
 

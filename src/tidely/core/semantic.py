@@ -38,13 +38,22 @@ class SemanticEngine:
             "SSN": re.compile(r"^\d{3}-\d{2}-\d{4}$"),
             "Credit Card": re.compile(r"^(?:\d{4}[-\s]?){3}\d{4}$"),
             "IBAN": re.compile(r"^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$"),
-            "US State": re.compile(r"^(?:A[LKSZRAEP]|C[AOT]|D[EC]|F[LM]|G[AU]|HI|I[ADLN]|K[SY]|LA|M[ADEHINOPST]|N[CDEHJMVY]|O[HKR]|P[ARW]|RI|S[CD]|T[NX]|UT|V[AIT]|W[AIVY])$", re.IGNORECASE),
-            "Gender": re.compile(r"^(male|female|m|f|other|unknown|non-binary)$", re.IGNORECASE),
+            "US State": re.compile(
+                r"^(?:A[LKSZRAEP]|C[AOT]|D[EC]|F[LM]|G[AU]|HI|I[ADLN]|K[SY]|LA|M[ADEHINOPST]|N[CDEHJMVY]|O[HKR]|P[ARW]|RI|S[CD]|T[NX]|UT|V[AIT]|W[AIVY])$",
+                re.IGNORECASE,
+            ),
+            "Gender": re.compile(
+                r"^(male|female|m|f|other|unknown|non-binary)$", re.IGNORECASE
+            ),
             "Age": re.compile(r"^(?:100|[1-9]?\d)$"),
             "Salary": re.compile(r"^[\$\€\£\¥]?\s*\d{3,10}(?:[,\.]\d{2})?$"),
-            "Hash": re.compile(r"^[a-fA-F0-9]{32}$|^[a-fA-F0-9]{40}$|^[a-fA-F0-9]{64}$"),
+            "Hash": re.compile(
+                r"^[a-fA-F0-9]{32}$|^[a-fA-F0-9]{40}$|^[a-fA-F0-9]{64}$"
+            ),
             "HTML": re.compile(r"<[a-z/][\s\S]*>", re.IGNORECASE),
-            "Date": re.compile(r"^\d{4}[-\/]\d{2}[-\/]\d{2}(?:\s+\d{2}:\d{2}:\d{2})?$|^\d{2}[-\/]\d{2}[-\/]\d{4}$"),
+            "Date": re.compile(
+                r"^\d{4}[-\/]\d{2}[-\/]\d{2}(?:\s+\d{2}:\d{2}:\d{2})?$|^\d{2}[-\/]\d{2}[-\/]\d{4}$"
+            ),
             "Vehicle ID": re.compile(r"^[A-HJ-NPR-Z0-9]{17}$", re.IGNORECASE),
         }
 
@@ -91,8 +100,30 @@ class SemanticEngine:
 
             col_lower = str(col).lower()
 
+            # Name-based key detection to protect keys from imputation/clipping
+            if (
+                col_lower == "id"
+                or col_lower.endswith("_id")
+                or col_lower.endswith("id_")
+                or col_lower.endswith("uuid")
+                or "steamid" in col_lower
+                or "personid" in col_lower
+                or "imdbid" in col_lower
+                or "key" in col_lower
+            ):
+                if "customer" in col_lower:
+                    inferred_type = "CustomerID"
+                elif "invoice" in col_lower:
+                    inferred_type = "InvoiceID"
+                elif "product" in col_lower:
+                    inferred_type = "ProductID"
+                else:
+                    inferred_type = "ID/Key"
+                confidence = 1.0
+                match_rate = 1.0
+                recommended_cleaning = "None"
             # String parsing rules
-            if any(t in dtype for t in ("object", "string", "str")):
+            elif any(t in dtype for t in ("object", "string", "str")):
                 # Check for high-cardinality ID keys
                 total = col_meta.get("total_count", 0)
                 unique = col_meta.get("unique_count", 0)
@@ -137,7 +168,9 @@ class SemanticEngine:
                         )
                         pattern_rates[p_name] = matches / len(sample_list)
                     # If Date and Phone both match, prefer Date to avoid YYYY-MM-DD to Phone mapping
-                    if pattern_rates.get("Date", 0.0) >= 0.5 and pattern_rates.get("Phone", 0.0) == pattern_rates.get("Date", 0.0):
+                    if pattern_rates.get("Date", 0.0) >= 0.5 and pattern_rates.get(
+                        "Phone", 0.0
+                    ) == pattern_rates.get("Date", 0.0):
                         best_match = "Date"
                     else:
                         best_match = max(pattern_rates, key=lambda k: pattern_rates[k])
@@ -182,7 +215,9 @@ class SemanticEngine:
                             )
                             risk_score = 0.0
                         elif best_match == "SSN":
-                            recommended_cleaning = "Mask/Tokenize or validate SSN digits"
+                            recommended_cleaning = (
+                                "Mask/Tokenize or validate SSN digits"
+                            )
                             risk_score = 0.8
                         elif best_match == "Credit Card":
                             recommended_cleaning = "Mask/Tokenize PCI-DSS card digits"
@@ -191,7 +226,9 @@ class SemanticEngine:
                             recommended_cleaning = "Validate bank account format"
                             risk_score = 0.7
                         elif best_match == "US State":
-                            recommended_cleaning = "Convert to standard uppercase state code"
+                            recommended_cleaning = (
+                                "Convert to standard uppercase state code"
+                            )
                             risk_score = 0.0
                         elif best_match == "Gender":
                             recommended_cleaning = "Standardize gender categories"
@@ -203,13 +240,19 @@ class SemanticEngine:
                             recommended_cleaning = "Extract numeric salary value"
                             risk_score = 0.1
                         elif best_match == "Hash":
-                            recommended_cleaning = "Format hash standard lowercase representation"
+                            recommended_cleaning = (
+                                "Format hash standard lowercase representation"
+                            )
                             risk_score = 0.0
                         elif best_match == "HTML":
-                            recommended_cleaning = "Strip markup/HTML tags to plain text"
+                            recommended_cleaning = (
+                                "Strip markup/HTML tags to plain text"
+                            )
                             risk_score = 0.2
                         elif best_match == "Date":
-                            recommended_cleaning = "Convert to standard UTC ISO8601 Datetime"
+                            recommended_cleaning = (
+                                "Convert to standard UTC ISO8601 Datetime"
+                            )
                             risk_score = 0.0
                         elif best_match == "Vehicle ID":
                             recommended_cleaning = "Standardize VIN characters"
@@ -217,6 +260,7 @@ class SemanticEngine:
                     else:
                         # Fallback heuristic rules
                         import re
+
                         col_words = set(re.split(r"[_ \-]", col_lower))
 
                         if "address" in col_lower or any(
@@ -248,19 +292,40 @@ class SemanticEngine:
                             inferred_type = "Country"
                             confidence = 0.8
                             recommended_cleaning = "Convert to ISO country names/codes"
-                        elif "city" in col_lower or "town" in col_lower or "municipality" in col_lower:
+                        elif (
+                            "city" in col_lower
+                            or "town" in col_lower
+                            or "municipality" in col_lower
+                        ):
                             inferred_type = "City"
                             confidence = 0.8
                             recommended_cleaning = "Normalize city capitalization"
-                        elif "customer" in col_lower and ("id" in col_words or "key" in col_words or "code" in col_words):
+                        elif "customer" in col_lower and (
+                            "id" in col_words
+                            or "key" in col_words
+                            or "code" in col_words
+                        ):
                             inferred_type = "CustomerID"
                             confidence = 0.9
                             recommended_cleaning = "Enforce uppercase ID formatting"
-                        elif "invoice" in col_lower and ("id" in col_words or "key" in col_words or "code" in col_words):
+                        elif "invoice" in col_lower and (
+                            "id" in col_words
+                            or "key" in col_words
+                            or "code" in col_words
+                        ):
                             inferred_type = "InvoiceID"
                             confidence = 0.9
                             recommended_cleaning = "Enforce uppercase ID formatting"
-                        elif ("product" in col_lower or "item" in col_lower or "sku" in col_lower) and ("id" in col_words or "key" in col_words or "code" in col_words or "sku" in col_lower):
+                        elif (
+                            "product" in col_lower
+                            or "item" in col_lower
+                            or "sku" in col_lower
+                        ) and (
+                            "id" in col_words
+                            or "key" in col_words
+                            or "code" in col_words
+                            or "sku" in col_lower
+                        ):
                             inferred_type = "ProductID"
                             confidence = 0.9
                             recommended_cleaning = "Enforce SKU alphanumeric pattern"

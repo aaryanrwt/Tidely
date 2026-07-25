@@ -81,27 +81,47 @@ class RepairPlan:
 
         # If no actions, simple SELECT
         if not self.actions:
-            cols_str = ", ".join(f"{src} AS {sql}" for src, sql in zip(source_cols, sql_cols, strict=True))
-            return f'SELECT {cols_str} FROM "{source}"' if "." not in source and "/" not in source and "\\" not in source else f"SELECT {cols_str} FROM '{source}'"
+            cols_str = ", ".join(
+                f"{src} AS {sql}"
+                for src, sql in zip(source_cols, sql_cols, strict=True)
+            )
+            return (
+                f'SELECT {cols_str} FROM "{source}"'
+                if "." not in source and "/" not in source and "\\" not in source
+                else f"SELECT {cols_str} FROM '{source}'"
+            )
 
         ctes = []
-        current_source = f"'{source}'" if "." in source or "/" in source or "\\" in source else f'"{source}"'
+        current_source = (
+            f"'{source}'"
+            if "." in source or "/" in source or "\\" in source
+            else f'"{source}"'
+        )
         prev_step = "raw_source"
 
         # Initial select to set up raw CTE
-        cols_str = ", ".join(f"{src} AS {sql}" for src, sql in zip(source_cols, sql_cols, strict=True))
+        cols_str = ", ".join(
+            f"{src} AS {sql}" for src, sql in zip(source_cols, sql_cols, strict=True)
+        )
         ctes.append(f"raw_source AS (SELECT {cols_str} FROM {current_source})")
 
         for idx, action in enumerate(self.actions):
             step_name = f"step_{idx + 1}"
 
             # Row-level deduplications
-            if action.category == "Duplicate Rows" and "Dropped exact duplicate rows" in action.what_changed:
+            if (
+                action.category == "Duplicate Rows"
+                and "Dropped exact duplicate rows" in action.what_changed
+            ):
                 ctes.append(f"{step_name} AS (SELECT DISTINCT * FROM {prev_step})")
-            elif action.category == "Duplicate IDs" or (action.category == "Duplicate Rows" and action.column):
+            elif action.category == "Duplicate IDs" or (
+                action.category == "Duplicate Rows" and action.column
+            ):
                 col = action.column
                 if col in columns:
-                    sql_col = f"_unnamed_{columns.index(col)}" if col == "" else f'"{col}"'
+                    sql_col = (
+                        f"_unnamed_{columns.index(col)}" if col == "" else f'"{col}"'
+                    )
                     sub_cols = ", ".join(sql_cols)
                     ctes.append(
                         f"{step_name} AS ("
@@ -248,7 +268,9 @@ class RepairPlan:
                 if col and col in df.columns and col in new_df.columns:
                     try:
                         changed = (df[col] != new_df[col]).sum()
-                        null_changed = (df[col].is_null() != new_df[col].is_null()).sum()
+                        null_changed = (
+                            df[col].is_null() != new_df[col].is_null()
+                        ).sum()
                         action.rows_affected = int(max(changed, null_changed))
                     except Exception:
                         action.rows_affected = df.height

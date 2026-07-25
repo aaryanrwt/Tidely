@@ -155,7 +155,10 @@ def make_downcast_rule(
 
 
 def make_outlier_iqr_rule(
-    column: str, threshold: float = 1.5, lower_bound: Any = None, upper_bound: Any = None
+    column: str,
+    threshold: float = 1.5,
+    lower_bound: Any = None,
+    upper_bound: Any = None,
 ) -> Callable[[pl.DataFrame], pl.DataFrame]:
     """Clips outlier values based on Interquartile Range (IQR)."""
 
@@ -294,18 +297,34 @@ def make_impute_group_median_rule(
 
 
 def make_impute_group_mode_rule(
-    column: str, group_column: str, global_mode_val: Any = None, group_modes: dict[Any, Any] | None = None
+    column: str,
+    group_column: str,
+    global_mode_val: Any = None,
+    group_modes: dict[Any, Any] | None = None,
 ) -> Callable[[pl.DataFrame], pl.DataFrame]:
     """Imputes nulls based on the mode of a correlated group."""
 
     def _rule(df: pl.DataFrame) -> pl.DataFrame:
         try:
             if group_modes is not None:
-                mode_filler = pl.col(group_column).replace(group_modes, default=global_mode_val)
+                mode_filler = pl.col(group_column).replace(
+                    group_modes, default=global_mode_val
+                )
                 return df.with_columns(pl.col(column).fill_null(mode_filler))
-            mode_df = df.group_by([group_column, column]).count().sort([group_column, "count"], descending=True).unique(subset=[group_column])
-            joined = df.join(mode_df.select([group_column, pl.col(column).alias("__mode_val")]), on=group_column, how="left")
-            res = joined.with_columns(pl.col(column).fill_null(pl.col("__mode_val"))).drop("__mode_val")
+            mode_df = (
+                df.group_by([group_column, column])
+                .count()
+                .sort([group_column, "count"], descending=True)
+                .unique(subset=[group_column])
+            )
+            joined = df.join(
+                mode_df.select([group_column, pl.col(column).alias("__mode_val")]),
+                on=group_column,
+                how="left",
+            )
+            res = joined.with_columns(
+                pl.col(column).fill_null(pl.col("__mode_val"))
+            ).drop("__mode_val")
             g_mode = global_mode_val
             if g_mode is None:
                 global_mode = df.select(pl.col(column).mode())
@@ -375,6 +394,7 @@ def make_fuzzy_dedup_rule(
             if mapping is not None:
                 return df.with_columns(pl.col(column).replace(mapping))
             import rapidfuzz
+
             counts = df.group_by(column).count().sort("count", descending=True)
             sorted_vals = counts[column].drop_nulls().to_list()
             rule_mapping = {}
@@ -412,7 +432,7 @@ def make_smart_string_clean_rule(column: str) -> Callable[[pl.DataFrame], pl.Dat
                 .str.normalize_unicode()
                 .str.replace_all(r"[\u200B-\u200D\uFEFF]", "")
                 .str.replace_all(r"[\x00-\x1F\x7F-\x9F]", "")
-                .str.replace_all(r"[“”]", "\"")
+                .str.replace_all(r"[“”]", '"')
                 .str.replace_all(r"[‘’]", "'")
                 .str.replace_all(r"\s+", " ")
                 .str.strip_chars()
@@ -435,7 +455,9 @@ def make_smart_date_rule(column: str) -> Callable[[pl.DataFrame], pl.DataFrame]:
                 if max_val is not None:
                     max_val_f = float(max_val)
                     if max_val_f > 1e9:
-                        return df.with_columns(pl.from_epoch(pl.col(column)).alias(column))
+                        return df.with_columns(
+                            pl.from_epoch(pl.col(column)).alias(column)
+                        )
                     if 30000 < max_val_f < 60000:
                         return df.with_columns(
                             ((pl.col(column) - 25569.0) * 86400000.0)
@@ -449,7 +471,10 @@ def make_smart_date_rule(column: str) -> Callable[[pl.DataFrame], pl.DataFrame]:
         else:
             try:
                 import pandas as pd
-                pd_series = pd.to_datetime(df[column].to_pandas(), errors="coerce", format="mixed")
+
+                pd_series = pd.to_datetime(
+                    df[column].to_pandas(), errors="coerce", format="mixed"
+                )
                 series_polars = pl.Series(column, pd_series.tolist())
                 return df.with_columns(series_polars)
             except Exception:
@@ -464,20 +489,43 @@ def make_smart_categorical_rule(column: str) -> Callable[[pl.DataFrame], pl.Data
     def _rule(df: pl.DataFrame) -> pl.DataFrame:
         try:
             boolean_map = {
-                "yes": "True", "no": "False",
-                "y": "True", "n": "False",
-                "true": "True", "false": "False",
-                "t": "True", "f": "False",
-                "1": "True", "0": "False",
+                "yes": "True",
+                "no": "False",
+                "y": "True",
+                "n": "False",
+                "true": "True",
+                "false": "False",
+                "t": "True",
+                "f": "False",
+                "1": "True",
+                "0": "False",
             }
-            unique_list = df[column].cast(pl.String).str.strip_chars().str.to_lowercase().drop_nulls().unique().to_list()
+            unique_list = (
+                df[column]
+                .cast(pl.String)
+                .str.strip_chars()
+                .str.to_lowercase()
+                .drop_nulls()
+                .unique()
+                .to_list()
+            )
             if unique_list and all(str(v) in boolean_map for v in unique_list):
                 return df.with_columns(
-                    pl.col(column).cast(pl.String).str.strip_chars().str.to_lowercase().replace(boolean_map).alias(column)
+                    pl.col(column)
+                    .cast(pl.String)
+                    .str.strip_chars()
+                    .str.to_lowercase()
+                    .replace(boolean_map)
+                    .alias(column)
                 )
             else:
                 return df.with_columns(
-                    pl.col(column).cast(pl.String).str.strip_chars().str.to_lowercase().str.capitalize().alias(column)
+                    pl.col(column)
+                    .cast(pl.String)
+                    .str.strip_chars()
+                    .str.to_lowercase()
+                    .str.capitalize()
+                    .alias(column)
                 )
         except Exception:
             pass
@@ -486,7 +534,9 @@ def make_smart_categorical_rule(column: str) -> Callable[[pl.DataFrame], pl.Data
     return _rule
 
 
-def make_smart_numeric_clean_rule(column: str) -> Callable[[pl.DataFrame], pl.DataFrame]:
+def make_smart_numeric_clean_rule(
+    column: str,
+) -> Callable[[pl.DataFrame], pl.DataFrame]:
     """Cleans numeric values by removing currencies, percentages, commas, and scientific notations."""
 
     def _rule(df: pl.DataFrame) -> pl.DataFrame:
@@ -494,7 +544,13 @@ def make_smart_numeric_clean_rule(column: str) -> Callable[[pl.DataFrame], pl.Da
             cleaned = pl.col(column).cast(pl.String).str.strip_chars()
             cleaned = cleaned.str.replace_all(r"[\$\€\£\¥\s]", "")
             cleaned = cleaned.str.replace_all(r",", "")
-            is_pct = df.select(pl.col(column).cast(pl.String).str.strip_chars().str.ends_with("%").any()).item()
+            is_pct = df.select(
+                pl.col(column)
+                .cast(pl.String)
+                .str.strip_chars()
+                .str.ends_with("%")
+                .any()
+            ).item()
             if is_pct:
                 cleaned = cleaned.str.replace_all(r"%", "")
                 expr = cleaned.cast(pl.Float64) / 100.0

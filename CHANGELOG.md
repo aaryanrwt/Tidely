@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-07-25
+
+### Added
+- **Sequential Benchmark Engine**: New `benchmarks/` package implementing a full sequential benchmark pipeline — one dataset at a time, memory freed after each run, never loading multiple large datasets simultaneously.
+- **Traditional Cleaning Pipeline**: Classical baseline using pandas, polars, numpy, scikit-learn, RapidFuzz, pyarrow, and regex for scientific comparison against Tidely.
+- **12-Dataset Benchmark Suite**: Evaluates Tidely against real-world HuggingFace datasets (anisoleai/fineweb-tokenized, openai/gsm8k, mteb/results, HPLT, Spawning, InternRobotics, and 6 more).
+- **Equivalence Validator**: Automated post-cleaning equivalence verification — row count, null count, duplicate count, dtype consistency, categorical values, numeric statistics, datetime parsing, boolean normalization, and whitespace cleanup. Never silently accepts mismatches.
+- **Benchmark Reports**: Auto-generated `benchmarks/BENCHMARK.md` and `benchmark_results.json` with per-dataset timing, RAM, throughput, speedup, and correctness columns.
+- **Regression Gate**: CI fails if any Tidely run exceeds 2× the traditional pipeline time on any dataset.
+- **`bench` Optional Dependency Group**: `pip install tidely[bench]` installs all benchmark deps (datasets, scikit-learn, scipy, psutil, rapidfuzz, matplotlib, requests).
+- **`benchmarks/` in sdist**: Benchmark code is included in source distributions for reproducibility.
+
+### Changed
+- **CI Workflow**: Removed Linux and macOS runners. Windows-only CI (`windows-latest`) with Python 3.12, 3.13, and 3.14.
+- **CI Workflow**: Added Ruff format check, coverage threshold (≥70%), and benchmark smoke test step.
+- **CI Workflow**: Upgraded to `actions/checkout@v4` and `actions/setup-python@v5` with pip caching.
+
+### Performance
+- Confirmed zero-copy Polars→Polars path in `adapter.py` (lines 296–302) — no unnecessary pandas roundtrip when input is already a Polars DataFrame.
+- SemanticEngine regex patterns pre-compiled at `__init__` time (verified) — eliminates per-call re-compilation overhead.
+- Sequential benchmark design enforces `gc.collect()` + explicit `del` between datasets — prevents memory accumulation on large multi-dataset runs.
+
+
+## [1.4.3] - 2026-07-12
+
+### Fixed
+- **Hugging Face Compatibility**: Resolved streaming mode loader edge-cases.
+- **Type Coercion**: Handled edge-case float representations in string-typed categorical data.
+
+### Added
+- **Adversarial Validation**: Completed full scientific trust audit on Hugging Face and ARFF datasets.
+- **Traceability Reports**: Added BENCHMARK.md, VALIDATION_REPORT.md, DATA_PRESERVATION.md, and ML_IMPACT.md deliverables.
+
 ## [1.4.2] - 2026-07-01
 
 ### Fixed

@@ -30,6 +30,7 @@ def run_pipeline(data: Any) -> CleanResult:
         CleanResult: The outcome object containing the cleaned DataFrame.
     """
     import time
+
     start_time = time.time()
 
     # 1. Deduplicate column names if pandas to prevent downstream crashes
@@ -48,7 +49,11 @@ def run_pipeline(data: Any) -> CleanResult:
     from tidely.core.summary import CleanSummary
     from tidely.core.tracker import OutcomeTracker
 
-    if pd is not None and isinstance(data, pd.DataFrame) and data.columns.has_duplicates:
+    if (
+        pd is not None
+        and isinstance(data, pd.DataFrame)
+        and data.columns.has_duplicates
+    ):
         data = data.copy()
         new_cols = []
         seen = set()
@@ -86,9 +91,14 @@ def run_pipeline(data: Any) -> CleanResult:
                 sample_df = pl.read_csv(data)
         elif ext == ".parquet":
             import pyarrow.parquet as pq
+
             pf = pq.ParquetFile(data)  # type: ignore[no-untyped-call]
             from typing import cast
-            sample_df = cast(pl.DataFrame, pl.from_arrow(pf.read_row_group(0).slice(0, 10000)))  # type: ignore[no-untyped-call]
+
+            sample_df = cast(
+                pl.DataFrame,
+                pl.from_arrow(pf.read_row_group(0).slice(0, 10000)),  # type: ignore[no-untyped-call]
+            )
         else:
             pl_lazy, _ = normalize_to_polars(data)
             if isinstance(pl_lazy, pl.LazyFrame):
@@ -219,16 +229,54 @@ def run_pipeline(data: Any) -> CleanResult:
                 }
             )
 
-    orig_h = df_initial_for_tracker.height if hasattr(df_initial_for_tracker, "height") else 0
-    clean_h = df_cleaned_for_tracker.height if hasattr(df_cleaned_for_tracker, "height") else 0
+    orig_h = (
+        df_initial_for_tracker.height
+        if hasattr(df_initial_for_tracker, "height")
+        else 0
+    )
+    clean_h = (
+        df_cleaned_for_tracker.height
+        if hasattr(df_cleaned_for_tracker, "height")
+        else 0
+    )
     rows_removed = max(0, orig_h - clean_h)
-    columns_modified = len({action.column for action in p.actions if getattr(action, "column", "")})
+    columns_modified = len(
+        {action.column for action in p.actions if getattr(action, "column", "")}
+    )
 
-    missing_values_fixed = sum(action.rows_affected for action in p.actions if action.category == "Missing Values")
-    duplicates_removed_count = sum(action.rows_affected for action in p.actions if action.category in ("Duplicate IDs", "Duplicate Rows"))
-    outliers_fixed = sum(action.rows_affected for action in p.actions if action.category == "Outliers")
-    datatypes_optimized = sum(1 for action in p.actions if action.category in ("Datatype Optimization", "Categorical", "Smart Categorical"))
-    semantic_corrections = sum(1 for action in p.actions if action.category in ("Email", "Phone", "ZIP Code", "Coordinate Clip", "Smart String", "Smart Numeric", "Smart Date"))
+    missing_values_fixed = sum(
+        action.rows_affected
+        for action in p.actions
+        if action.category == "Missing Values"
+    )
+    duplicates_removed_count = sum(
+        action.rows_affected
+        for action in p.actions
+        if action.category in ("Duplicate IDs", "Duplicate Rows")
+    )
+    outliers_fixed = sum(
+        action.rows_affected for action in p.actions if action.category == "Outliers"
+    )
+    datatypes_optimized = sum(
+        1
+        for action in p.actions
+        if action.category
+        in ("Datatype Optimization", "Categorical", "Smart Categorical")
+    )
+    semantic_corrections = sum(
+        1
+        for action in p.actions
+        if action.category
+        in (
+            "Email",
+            "Phone",
+            "ZIP Code",
+            "Coordinate Clip",
+            "Smart String",
+            "Smart Numeric",
+            "Smart Date",
+        )
+    )
 
     outcome = tracker.track(df_cleaned_for_tracker, autofixes, warnings)
     outcome["final_health"] = trust_final.overall
@@ -263,7 +311,11 @@ def run_pipeline(data: Any) -> CleanResult:
     )
 
     # Convert raw cleaned dataframe to original incoming format
-    if pd is not None and format_name == "pandas" and not isinstance(cleaned_df_raw, pd.DataFrame):
+    if (
+        pd is not None
+        and format_name == "pandas"
+        and not isinstance(cleaned_df_raw, pd.DataFrame)
+    ):
         if isinstance(cleaned_df_raw, pl.LazyFrame):
             cleaned_df_out = cleaned_df_raw.collect().to_pandas()
         else:

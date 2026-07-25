@@ -213,7 +213,7 @@ if __name__ == "__main__":
         f"{'Framework':<20} | {'Latency (ms)':<15} | {'RAM Overhead (MB)':<20} | {'Lines of Code':<15}"
     )
     print("-" * 90)
-    
+
     def print_framework_row(name, t, m, loc):
         t_str = f"{t * 1000:<15.0f}" if t is not None else f"{'N/A':<15}"
         m_str = f"{m:<20.1f}" if m is not None else f"{'N/A':<20}"

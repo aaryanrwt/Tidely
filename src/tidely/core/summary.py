@@ -45,7 +45,11 @@ class CleanSummary:
     def __str__(self) -> str:
         """Generates a beautiful human-readable summary block string."""
         saved_mb = max(0.0, self.memory_before_mb - self.memory_after_mb)
-        pct = (saved_mb / self.memory_before_mb * 100) if self.memory_before_mb > 0 else 0.0
+        pct = (
+            (saved_mb / self.memory_before_mb * 100)
+            if self.memory_before_mb > 0
+            else 0.0
+        )
 
         ml_status = (
             "Excellent (Ready for production ML models)"
@@ -97,9 +101,11 @@ class CleanSummary:
                     lines.append(f"    {line}")
             lines.append("-" * 60)
 
-        lines.extend([
-            "Warnings (Requires Human Attention)",
-        ])
+        lines.extend(
+            [
+                "Warnings (Requires Human Attention)",
+            ]
+        )
 
         if not self.warnings:
             lines.append("  • None. Data looks clean.")
@@ -110,14 +116,16 @@ class CleanSummary:
                 for line in warn_lines[1:]:
                     lines.append(f"    {line}")
 
-        lines.extend([
-            "-" * 60,
-            "READINESS CERTIFICATION:",
-            f"  • ML Readiness:          {ml_status}",
-            f"  • Business Readiness:    {biz_status}",
-            f"  • Final Recommendation:  {rec}",
-            "=" * 60,
-        ])
+        lines.extend(
+            [
+                "-" * 60,
+                "READINESS CERTIFICATION:",
+                f"  • ML Readiness:          {ml_status}",
+                f"  • Business Readiness:    {biz_status}",
+                f"  • Final Recommendation:  {rec}",
+                "=" * 60,
+            ]
+        )
         return "\n".join(lines)
 
     def __repr__(self) -> str:

@@ -46,16 +46,23 @@ class CleanResult:
             health_before = report.get("initial_health", 0.0)
             health_after = report.get("final_health", 0.0)
             engine_name = report.get("engine_name", "polars_eager")
-            engine_reason = report.get("engine_reason", "Low-latency default in-memory execution.")
+            engine_reason = report.get(
+                "engine_reason", "Low-latency default in-memory execution."
+            )
 
             # preview rows
             try:
                 import pandas as pd
+
                 if isinstance(self.df, pd.DataFrame):
                     preview_df = self.df.head(10)
                 else:
                     preview_df = self.df.head(10)
-                preview_html = preview_df._repr_html_() if hasattr(preview_df, "_repr_html_") else ""
+                preview_html = (
+                    preview_df._repr_html_()
+                    if hasattr(preview_df, "_repr_html_")
+                    else ""
+                )
                 if preview_html is None:
                     preview_html = "<p>Data preview unavailable</p>"
             except Exception:
@@ -64,7 +71,9 @@ class CleanResult:
             # Render column diagnostic rows
             diag_rows = ""
             for col, diag in col_diag.items():
-                algs_considered = ", ".join(diag.get("algorithms_considered", [])) or "None"
+                algs_considered = (
+                    ", ".join(diag.get("algorithms_considered", [])) or "None"
+                )
                 alg_chosen = diag.get("algorithm_chosen", "None")
                 reason = diag.get("reason", "Column already clean.")
                 score_before = diag.get("quality_score_before", 100.0)
@@ -72,8 +81,20 @@ class CleanResult:
                 conf = diag.get("confidence_score", 1.0)
                 sem_conf = diag.get("semantic_score", 0.0)
 
-                color_b = "green" if score_before >= 90 else "orange" if score_before >= 70 else "red"
-                color_a = "green" if score_after >= 90 else "orange" if score_after >= 70 else "red"
+                color_b = (
+                    "green"
+                    if score_before >= 90
+                    else "orange"
+                    if score_before >= 70
+                    else "red"
+                )
+                color_a = (
+                    "green"
+                    if score_after >= 90
+                    else "orange"
+                    if score_after >= 70
+                    else "red"
+                )
 
                 diag_rows += f"""
                 <tr>
@@ -93,7 +114,9 @@ class CleanResult:
             for fix in fixes:
                 audit_rows += f"<li>{fix.replace(chr(10), '<br>')}</li>"
             for warn in warnings:
-                audit_rows += f"<li class='warning-item'>{warn.replace(chr(10), '<br>')}</li>"
+                audit_rows += (
+                    f"<li class='warning-item'>{warn.replace(chr(10), '<br>')}</li>"
+                )
 
             html_content = f"""<!DOCTYPE html>
 <html lang="en">
@@ -325,6 +348,7 @@ class CleanResult:
                 f.write(html_content)
         else:
             from tidely.api import save
+
             save(self.df, filepath)
 
     def summary(self) -> str:
@@ -384,7 +408,8 @@ class CleanResult:
     @property
     def version(self) -> str:
         """Returns the version of Tidely used."""
-        return "1.4.2"
+        import tidely
+        return tidely.__version__
 
     def undo(self) -> Any:
         """Reverts the cleaning operation, returning the original DataFrame."""

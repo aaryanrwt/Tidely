@@ -26,6 +26,7 @@ except ImportError:
 def estimate_dataset_size(data: Any) -> int:
     """Estimates the size of the dataset in bytes without loading it into RAM."""
     import os
+
     if isinstance(data, str):
         if os.path.exists(data):
             return int(os.path.getsize(data))
@@ -62,7 +63,7 @@ def decompress_bytes(content: bytes) -> tuple[bytes, str | None]:
     if content.startswith(b"PK\x03\x04"):
         try:
             with zipfile.ZipFile(io.BytesIO(content)) as z:
-                names = [n for n in z.namelist() if not n.endswith('/')]
+                names = [n for n in z.namelist() if not n.endswith("/")]
                 if names:
                     with z.open(names[0]) as f:
                         return f.read(), os.path.splitext(names[0])[1].lower()
@@ -142,7 +143,9 @@ def normalize_to_polars(
         try:
             cursor = data.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-            tables = [r[0] for r in cursor.fetchall() if r[0] not in ("sqlite_sequence",)]
+            tables = [
+                r[0] for r in cursor.fetchall() if r[0] not in ("sqlite_sequence",)
+            ]
             if not tables:
                 raise TidelyDataError("No tables found in SQLite database connection.")
             return pl.read_database(f'SELECT * FROM "{tables[0]}"', data), "sqlite"
@@ -154,7 +157,12 @@ def normalize_to_polars(
         try:
             tables = [r[0] for r in data.execute("SHOW TABLES").fetchall()]
             if not tables:
-                tables = [r[0] for r in data.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='main'").fetchall()]
+                tables = [
+                    r[0]
+                    for r in data.execute(
+                        "SELECT table_name FROM information_schema.tables WHERE table_schema='main'"
+                    ).fetchall()
+                ]
             if not tables:
                 raise TidelyDataError("No tables found in DuckDB database connection.")
             return data.execute(f'SELECT * FROM "{tables[0]}"').pl(), "duckdb"
@@ -191,7 +199,9 @@ def normalize_to_polars(
                 conn = sqlite3.connect(data)
                 cursor = conn.cursor()
                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-                tables = [r[0] for r in cursor.fetchall() if r[0] not in ("sqlite_sequence",)]
+                tables = [
+                    r[0] for r in cursor.fetchall() if r[0] not in ("sqlite_sequence",)
+                ]
                 if tables:
                     df = pl.read_database(f'SELECT * FROM "{tables[0]}"', conn)
                     conn.close()
@@ -206,7 +216,12 @@ def normalize_to_polars(
                     duck_conn = duckdb.connect(data)
                     tables = [r[0] for r in duck_conn.execute("SHOW TABLES").fetchall()]
                     if not tables:
-                        tables = [r[0] for r in duck_conn.execute("SELECT table_name FROM information_schema.tables WHERE table_schema='main'").fetchall()]
+                        tables = [
+                            r[0]
+                            for r in duck_conn.execute(
+                                "SELECT table_name FROM information_schema.tables WHERE table_schema='main'"
+                            ).fetchall()
+                        ]
                     if tables:
                         df = duck_conn.execute(f'SELECT * FROM "{tables[0]}"').pl()
                         duck_conn.close()
@@ -229,13 +244,26 @@ def normalize_to_polars(
                 target_ext = ext
                 data = content
         except Exception as e:
-            raise TidelyDataError(f"Failed to load dataset from path '{data}': {e}") from e
+            raise TidelyDataError(
+                f"Failed to load dataset from path '{data}': {e}"
+            ) from e
     else:
         target_ext = None
 
     # Handle raw bytes data
     if isinstance(data, bytes):
-        if target_ext in (None, "", "zip", "gz", "bz2", "xz", ".zip", ".gz", ".bz2", ".xz"):
+        if target_ext in (
+            None,
+            "",
+            "zip",
+            "gz",
+            "bz2",
+            "xz",
+            ".zip",
+            ".gz",
+            ".bz2",
+            ".xz",
+        ):
             decompressed_content, inner_ext = decompress_bytes(data)
             if inner_ext:
                 target_ext = inner_ext
@@ -249,7 +277,9 @@ def normalize_to_polars(
                 text = data.decode(enc)
                 delim = detect_delimiter(text)
                 fmt = "tsv" if delim == "\t" else "csv"
-                return pl.read_csv(text.encode("utf-8"), separator=delim, infer_schema_length=10000), fmt
+                return pl.read_csv(
+                    text.encode("utf-8"), separator=delim, infer_schema_length=10000
+                ), fmt
             elif ext in (".parquet", "parquet"):
                 return pl.read_parquet(io.BytesIO(data)), "parquet"
             elif ext in (".xlsx", "xlsx", ".xls", "xls", ".ods", "ods"):
@@ -269,7 +299,9 @@ def normalize_to_polars(
                         return pl.read_json(io.BytesIO(data)), "json"
                     except Exception:
                         if pd is not None:
-                            return pl.from_pandas(pd.read_json(io.BytesIO(data))), "json"
+                            return pl.from_pandas(
+                                pd.read_json(io.BytesIO(data))
+                            ), "json"
                         raise
             elif ext in (".xml", "xml"):
                 if pd is not None:
@@ -287,9 +319,13 @@ def normalize_to_polars(
                     enc = detect_encoding(data)
                     text = data.decode(enc)
                     delim = detect_delimiter(text)
-                    return pl.read_csv(text.encode("utf-8"), separator=delim, infer_schema_length=10000), "csv"
+                    return pl.read_csv(
+                        text.encode("utf-8"), separator=delim, infer_schema_length=10000
+                    ), "csv"
                 except Exception:
-                    raise TidelyDataError("Could not automatically parse raw dataset format.") from None
+                    raise TidelyDataError(
+                        "Could not automatically parse raw dataset format."
+                    ) from None
         except Exception as e:
             raise TidelyDataError(f"Failed to parse data bytes: {e}") from e
 
@@ -308,6 +344,7 @@ def normalize_to_polars(
                 try:
                     arrow_table = pa.Table.from_pandas(data)
                     from typing import cast
+
                     return cast(pl.DataFrame, pl.from_arrow(arrow_table)), "pandas"
                 except Exception:
                     pass

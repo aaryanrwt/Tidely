@@ -120,7 +120,9 @@ class DetectionEngine:
                 metadata["samples"][col] = sample_list
 
                 # Calculate entropy
-                metadata["columns"][col]["entropy"] = calculate_entropy(series, is_pandas=True)
+                metadata["columns"][col]["entropy"] = calculate_entropy(
+                    series, is_pandas=True
+                )
 
                 # Skewness and kurtosis
                 skew_val = None
@@ -194,7 +196,9 @@ class DetectionEngine:
                 metadata["samples"][col] = sample_list
 
                 # Calculate entropy
-                metadata["columns"][col]["entropy"] = calculate_entropy(series, is_pandas=False)
+                metadata["columns"][col]["entropy"] = calculate_entropy(
+                    series, is_pandas=False
+                )
 
                 # Skewness and kurtosis
                 skew_val = None
@@ -216,7 +220,10 @@ class DetectionEngine:
 
                 # Dtype confidence
                 dtype_conf = 1.0
-                if series.dtype == Any or str(series.dtype).lower() in ("string", "object"):
+                if series.dtype == Any or str(series.dtype).lower() in (
+                    "string",
+                    "object",
+                ):
                     numeric_matches = 0
                     for val in sample_list:
                         if val is not None:
@@ -233,14 +240,22 @@ class DetectionEngine:
 
         # Calculate null indicator correlations (vectorized)
         if hasattr(df, "columns"):
-            cols_with_nulls = [c for c in df.columns if metadata["columns"][c]["null_count"] > 0]
+            cols_with_nulls = [
+                c for c in df.columns if metadata["columns"][c]["null_count"] > 0
+            ]
             if len(cols_with_nulls) > 1:
                 try:
                     import polars as pl
-                    sample_len = min(df.height if hasattr(df, "height") else len(df), 5000)
+
+                    sample_len = min(
+                        df.height if hasattr(df, "height") else len(df), 5000
+                    )
                     if is_pandas:
-                        null_df = df[cols_with_nulls].head(sample_len).isna().astype(int)
+                        null_df = (
+                            df[cols_with_nulls].head(sample_len).isna().astype(int)
+                        )
                         import warnings
+
                         with warnings.catch_warnings():
                             warnings.filterwarnings("ignore", category=RuntimeWarning)
                             corr_matrix = null_df.corr()
@@ -254,8 +269,14 @@ class DetectionEngine:
                                     corrs[other] = float(val)
                             metadata["columns"][col]["null_correlations"] = corrs
                     else:
-                        null_df = df.head(sample_len).select([pl.col(c).is_null().cast(pl.Int32).alias(c) for c in cols_with_nulls])
+                        null_df = df.head(sample_len).select(
+                            [
+                                pl.col(c).is_null().cast(pl.Int32).alias(c)
+                                for c in cols_with_nulls
+                            ]
+                        )
                         import warnings
+
                         with warnings.catch_warnings():
                             warnings.filterwarnings("ignore", category=RuntimeWarning)
                             corr_matrix = null_df.corr()
@@ -266,7 +287,11 @@ class DetectionEngine:
                                 if col == other:
                                     continue
                                 val = corr_dict[other][i]
-                                if val is not None and not math.isnan(val) and abs(val) > 0.1:
+                                if (
+                                    val is not None
+                                    and not math.isnan(val)
+                                    and abs(val) > 0.1
+                                ):
                                     corrs[other] = float(val)
                             metadata["columns"][col]["null_correlations"] = corrs
                 except Exception:
@@ -288,7 +313,10 @@ class DetectionEngine:
                 except Exception:
                     pass
         if total_mem == 0:
-            total_mem = sum(c_info.get("memory_footprint_bytes", 0) for c_info in metadata["columns"].values())
+            total_mem = sum(
+                c_info.get("memory_footprint_bytes", 0)
+                for c_info in metadata["columns"].values()
+            )
         metadata["memory_footprint_bytes"] = total_mem
 
         # Estimate execution cost (roughly 0.01 ms per cell)

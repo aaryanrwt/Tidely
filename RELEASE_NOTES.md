@@ -1,27 +1,53 @@
-# Tidely v1.4.2 Release Notes
+# Tidely v1.5.0 Release Notes
 
-Tidely v1.4.2 is a production-hardening release focusing on quality, stability, correctness, and comprehensive pipeline validation.
+**Release date:** 2026-07-25  
+**Branch:** `feat/v1.5.0-performance-benchmark`  
+**Type:** Engineering Release — Performance, Benchmarking & Enterprise Validation
 
-## 🔧 What's Fixed in v1.4.2
+---
 
-- **Double Decompression**: Fixed Excel files (.xlsx) being double-decompressed as zip archives in the raw bytes parser.
-- **Stream Cursor Resets**: Added automatic `seek(0)` resets when reading from file-like objects so streams can be reused by routing backends.
-- **Name-to-Address Classification**: Refined semantic keyword matching to check word boundaries (e.g. `"st"` no longer incorrectly flags `"first_name"` or `"last_name"` as Addresses).
-- **Runtime Warnings**: Suppressed NumPy divide-by-zero runtime warnings in the correlation matrix calculation for constant columns.
+## What's New in v1.5.0
 
-## ✅ What's New in v1.4.2
+### Sequential Benchmark Engine
+A production-grade benchmark suite that processes one dataset at a time, compares Tidely against a traditional cleaning pipeline, validates output equivalence, and generates Markdown + JSON reports — all without loading multiple large datasets into memory simultaneously.
 
-- **Universal Export Engine**: Added direct support for 15+ export extensions (including TSV, Excel, ODS, Parquet, Feather, JSON, JSONL, XML, YAML, ARFF, DuckDB, SQLite).
-- **Universal & Intelligent Ingestion**: Integrated support for decompressing zip, gzip, bz2, and xz files, reading database connections, and custom formats.
-- **Advanced Semantic Classifiers**: Added support for Names, Cities, Countries, VINs, Customer IDs, Invoice IDs, and Product IDs.
-- **Readiness Summary & Metadata API**: Exposed execution metrics (time, memory saved, rows removed, backend used) directly on `CleanResult` as properties, and added ML/Business readiness assessments to `CleanSummary`.
-- **Packaging & CI Matrix**: Configured cross-platform matrix testing on Windows, macOS, and Linux, and declared optional packaging dependencies.
+### Traditional Pipeline Baseline
+A rigorous classical cleaning pipeline (pandas + polars + numpy + scikit-learn + RapidFuzz + pyarrow + regex) implementing 11 operations:
+null placeholder replacement, deduplication, missing value imputation (median/mode), whitespace normalization, unicode normalization (NFC), categorical lowercasing, boolean normalization, datetime parsing, outlier clipping (3×IQR), numeric downcasting, and optional fuzzy deduplication.
 
-## 📦 Installation
+### 12-Dataset HuggingFace Benchmark Suite
+Real-world datasets from anisoleai, openai, mteb, apple, mvp-lab, LiLabUNC, Spawning, InternRobotics, HPLT, and HuggingFace's own documentation — loaded via streaming or datasets-server API in 200-row subsets.
+
+### Automated Equivalence Validator
+8+ post-cleaning checks per dataset. Never silently accepts mismatches. Every difference is logged with scientific justification.
+
+### Windows-Only CI
+CI updated to Windows-only with Python 3.12, 3.13, and 3.14. Includes Ruff lint + format check, MyPy, Pytest with coverage threshold, benchmark smoke test, and regression gate.
+
+### Regression Gate
+CI fails if Tidely is more than 2× slower than the traditional pipeline on any dataset.
+
+---
+
+## Upgrading
+
 ```bash
-pip install tidely==1.4.2
+pip install tidely==1.5.0
+# With benchmark dependencies:
+pip install tidely[bench]==1.5.0
 ```
 
-## 📖 Known Limitations & Next Steps
-- Flat text streams without clear separators default to single-column parses.
-- Out-of-core streaming for JSON/XML formats is under active development.
+---
+
+## Running Benchmarks
+
+```bash
+# Full benchmark (all 12 datasets, sequential)
+python benchmarks/run_benchmark.py
+
+# CI smoke test (2 datasets)
+python benchmarks/run_benchmark.py --smoke-test
+
+# Check regressions on existing results
+python benchmarks/run_benchmark.py --check-regression
+```

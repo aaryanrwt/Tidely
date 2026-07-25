@@ -37,7 +37,9 @@ from tidely.core.rules import (
 )
 
 
-def compute_column_quality(col_meta: dict[str, Any], semantic_info: dict[str, Any], has_outliers: bool = False) -> float:
+def compute_column_quality(
+    col_meta: dict[str, Any], semantic_info: dict[str, Any], has_outliers: bool = False
+) -> float:
     """Computes a 0-100 data quality score for a single column."""
     score = 100.0
     null_pct = float(col_meta.get("null_percentage", 0.0))
@@ -78,7 +80,9 @@ def plan(data: Any) -> RepairPlan:
     column_diagnostics: dict[str, dict[str, Any]] = {}
     for col in df.columns:
         col_meta = metadata["columns"][col]
-        semantic_info = profile.semantic_types.get(col, {"type": "Unknown", "confidence": 0.0, "match_rate": 1.0})
+        semantic_info = profile.semantic_types.get(
+            col, {"type": "Unknown", "confidence": 0.0, "match_rate": 1.0}
+        )
         stype = semantic_info["type"]
 
         # Simple initial outlier check for scoring
@@ -94,7 +98,9 @@ def plan(data: Any) -> RepairPlan:
                         iqr = q3 - q1
                         lower = q1 - 1.5 * iqr
                         upper = q3 + 1.5 * iqr
-                        outliers = df.filter((pl.col(col) < lower) | (pl.col(col) > upper)).height
+                        outliers = df.filter(
+                            (pl.col(col) < lower) | (pl.col(col) > upper)
+                        ).height
                         has_outliers = outliers > 0
             except Exception:
                 pass
@@ -139,9 +145,15 @@ def plan(data: Any) -> RepairPlan:
                         )
                     )
                     points_recovered += 15.0
-                    column_diagnostics[col]["algorithm_chosen"] = "Deduplicate Primary Key"
-                    column_diagnostics[col]["algorithms_considered"].append("Deduplicate Primary Key")
-                    column_diagnostics[col]["reason"] = "Dropped duplicate IDs to enforce entity uniqueness."
+                    column_diagnostics[col]["algorithm_chosen"] = (
+                        "Deduplicate Primary Key"
+                    )
+                    column_diagnostics[col]["algorithms_considered"].append(
+                        "Deduplicate Primary Key"
+                    )
+                    column_diagnostics[col]["reason"] = (
+                        "Dropped duplicate IDs to enforce entity uniqueness."
+                    )
             except Exception:
                 pass
 
@@ -156,12 +168,14 @@ def plan(data: Any) -> RepairPlan:
                     expected_score_bump=5,
                     rule_fn=make_email_rule(col),
                     column=col,
-                    sql_expr=f"LOWER(TRIM(CAST(\"{col}\" AS VARCHAR)))",
+                    sql_expr=f'LOWER(TRIM(CAST("{col}" AS VARCHAR)))',
                 )
             )
             points_recovered += 5.0
             column_diagnostics[col]["algorithm_chosen"] = "Email Normalization"
-            column_diagnostics[col]["reason"] = "Lowercased and stripped whitespace to standardize format."
+            column_diagnostics[col]["reason"] = (
+                "Lowercased and stripped whitespace to standardize format."
+            )
         elif stype == "Phone" and conf >= 0.7:
             actions.append(
                 RepairAction(
@@ -206,12 +220,14 @@ def plan(data: Any) -> RepairPlan:
                     expected_score_bump=5,
                     rule_fn=make_coordinate_clip_rule(col, is_lat=is_lat),
                     column=col,
-                    sql_expr=f"CASE WHEN \"{col}\" < {min_v} THEN {min_v} WHEN \"{col}\" > {max_v} THEN {max_v} ELSE \"{col}\" END",
+                    sql_expr=f'CASE WHEN "{col}" < {min_v} THEN {min_v} WHEN "{col}" > {max_v} THEN {max_v} ELSE "{col}" END',
                 )
             )
             points_recovered += 5.0
             column_diagnostics[col]["algorithm_chosen"] = "Coordinate Boundary Clipping"
-            column_diagnostics[col]["reason"] = f"Clipped coordinate values to standard {stype} boundaries."
+            column_diagnostics[col]["reason"] = (
+                f"Clipped coordinate values to standard {stype} boundaries."
+            )
         elif stype == "Text" and conf >= 0.8:
             actions.append(
                 RepairAction(
@@ -227,7 +243,9 @@ def plan(data: Any) -> RepairPlan:
             )
             points_recovered += 5.0
             column_diagnostics[col]["algorithm_chosen"] = "Smart Unicode String Clean"
-            column_diagnostics[col]["reason"] = "Standardized Unicode NFKC, zero-width, smart quotes and extra whitespace."
+            column_diagnostics[col]["reason"] = (
+                "Standardized Unicode NFKC, zero-width, smart quotes and extra whitespace."
+            )
         elif stype in ("Date", "Datetime") and dtype == pl.String:
             actions.append(
                 RepairAction(
@@ -238,12 +256,14 @@ def plan(data: Any) -> RepairPlan:
                     expected_score_bump=10,
                     rule_fn=make_smart_date_rule(col),
                     column=col,
-                    sql_expr=f"TRY_CAST(\"{col}\" AS TIMESTAMP)",
+                    sql_expr=f'TRY_CAST("{col}" AS TIMESTAMP)',
                 )
             )
             points_recovered += 10.0
             column_diagnostics[col]["algorithm_chosen"] = "Smart Date Parsing"
-            column_diagnostics[col]["reason"] = "Parsed mixed dates, Excel serial dates, and Unix timestamps."
+            column_diagnostics[col]["reason"] = (
+                "Parsed mixed dates, Excel serial dates, and Unix timestamps."
+            )
         elif stype in ("Gender", "US State") and conf >= 0.7:
             actions.append(
                 RepairAction(
@@ -259,7 +279,9 @@ def plan(data: Any) -> RepairPlan:
             )
             points_recovered += 5.0
             column_diagnostics[col]["algorithm_chosen"] = "Smart Category Normalization"
-            column_diagnostics[col]["reason"] = "Standardized capitalization and merged truthy/falsy values."
+            column_diagnostics[col]["reason"] = (
+                "Standardized capitalization and merged truthy/falsy values."
+            )
         elif stype in ("Salary", "Currency") and conf >= 0.7:
             actions.append(
                 RepairAction(
@@ -275,7 +297,9 @@ def plan(data: Any) -> RepairPlan:
             )
             points_recovered += 7.0
             column_diagnostics[col]["algorithm_chosen"] = "Smart Numeric Clean"
-            column_diagnostics[col]["reason"] = "Extracted numeric amounts, stripped commas and currencies."
+            column_diagnostics[col]["reason"] = (
+                "Extracted numeric amounts, stripped commas and currencies."
+            )
 
     # Fuzzy duplicate deduplication (RapidFuzz if installed)
     if "rapidfuzz" in sys.modules:
@@ -285,6 +309,7 @@ def plan(data: Any) -> RepairPlan:
             if stype in ("Name", "Address") and conf >= 0.7:
                 try:
                     import rapidfuzz
+
                     counts = df.group_by(col).count().sort("count", descending=True)
                     sorted_vals = counts[col].drop_nulls().to_list()
                     mapping = {}
@@ -303,8 +328,16 @@ def plan(data: Any) -> RepairPlan:
                             seen_f.add(val_str)
                             mapping[val] = val
 
-                    case_parts = [f"WHEN \"{col}\" = '{k}' THEN '{v}'" for k, v in mapping.items() if k != v]
-                    sql_expr = f"CASE {' '.join(case_parts)} ELSE \"{col}\" END" if case_parts else f"\"{col}\""
+                    case_parts = [
+                        f"WHEN \"{col}\" = '{k}' THEN '{v}'"
+                        for k, v in mapping.items()
+                        if k != v
+                    ]
+                    sql_expr = (
+                        f'CASE {" ".join(case_parts)} ELSE "{col}" END'
+                        if case_parts
+                        else f'"{col}"'
+                    )
 
                     actions.append(
                         RepairAction(
@@ -313,22 +346,35 @@ def plan(data: Any) -> RepairPlan:
                             why_it_changed="Grouped spelling variations of similar categories with similarity score >= 90%.",
                             confidence=0.85,
                             expected_score_bump=5,
-                            rule_fn=make_fuzzy_dedup_rule(col, threshold=90.0, mapping=mapping),
+                            rule_fn=make_fuzzy_dedup_rule(
+                                col, threshold=90.0, mapping=mapping
+                            ),
                             column=col,
                             sql_expr=sql_expr,
                         )
                     )
                     points_recovered += 5.0
-                    column_diagnostics[col]["algorithm_chosen"] = "Fuzzy Duplicate Standardization"
-                    column_diagnostics[col]["reason"] = "Merged categories using fuzzy string matching."
+                    column_diagnostics[col]["algorithm_chosen"] = (
+                        "Fuzzy Duplicate Standardization"
+                    )
+                    column_diagnostics[col]["reason"] = (
+                        "Merged categories using fuzzy string matching."
+                    )
                 except Exception:
                     pass
 
     # 3. Missing Value Imputation, Outliers, & Memory Optimization
     for col in df.columns:
-        # Check if the column is a DNA Sequence to preserve it exactly
+        # Check if the column is protected to preserve it exactly
         stype = profile.semantic_types.get(col, {}).get("type", "Unknown")
-        if stype == "DNA Sequence":
+        if stype in (
+            "DNA Sequence",
+            "ID/Key",
+            "UUID",
+            "SKU",
+            "CustomerID",
+            "InvoiceID",
+        ) or stype.endswith("ID"):
             continue
 
         dtype = df[col].dtype
@@ -382,7 +428,9 @@ def plan(data: Any) -> RepairPlan:
                 null_correlations=null_corrs,
             )
 
-            column_diagnostics[col]["algorithms_considered"].extend(["Mean Imputation", "Median Imputation", "Mode Imputation"])
+            column_diagnostics[col]["algorithms_considered"].extend(
+                ["Mean Imputation", "Median Imputation", "Mode Imputation"]
+            )
 
             if strategy == "impute_group_median":
                 group_col = params["group_column"]
@@ -394,8 +442,15 @@ def plan(data: Any) -> RepairPlan:
                     for r in group_meds_df.iter_rows():
                         if r[0] is not None and r[1] is not None:
                             group_meds_map[r[0]] = float(r[1])
-                    case_parts = [f"WHEN \"{group_col}\" = '{k}' THEN {v}" for k, v in group_meds_map.items()]
-                    sql_expr = f"COALESCE(\"{col}\", CASE {' '.join(case_parts)} ELSE {g_med_val} END)" if case_parts else f"COALESCE(\"{col}\", {g_med_val})"
+                    case_parts = [
+                        f"WHEN \"{group_col}\" = '{k}' THEN {v}"
+                        for k, v in group_meds_map.items()
+                    ]
+                    sql_expr = (
+                        f'COALESCE("{col}", CASE {" ".join(case_parts)} ELSE {g_med_val} END)'
+                        if case_parts
+                        else f'COALESCE("{col}", {g_med_val})'
+                    )
 
                     actions.append(
                         RepairAction(
@@ -404,14 +459,18 @@ def plan(data: Any) -> RepairPlan:
                             why_it_changed=f"Missingness is correlated with '{group_col}'. Group median handles MAR data.",
                             confidence=0.85,
                             expected_score_bump=12,
-                            rule_fn=make_impute_group_median_rule(col, group_col, global_median=g_med_val),
+                            rule_fn=make_impute_group_median_rule(
+                                col, group_col, global_median=g_med_val
+                            ),
                             column=col,
                             sql_expr=sql_expr,
                         )
                     )
                     points_recovered += 12.0
                     column_diagnostics[col]["algorithm_chosen"] = "Group-by Median"
-                    column_diagnostics[col]["reason"] = f"Imputed nulls using Group Median grouped by correlated column '{group_col}'."
+                    column_diagnostics[col]["reason"] = (
+                        f"Imputed nulls using Group Median grouped by correlated column '{group_col}'."
+                    )
                 except Exception:
                     strategy = "impute_median"
 
@@ -419,7 +478,11 @@ def plan(data: Any) -> RepairPlan:
                 group_col = params["group_column"]
                 try:
                     g_mode_series = df.select(pl.col(col).mode())
-                    g_mode_val = g_mode_series.item(0, 0) if g_mode_series.height > 0 else "Unknown"
+                    g_mode_val = (
+                        g_mode_series.item(0, 0)
+                        if g_mode_series.height > 0
+                        else "Unknown"
+                    )
                     if g_mode_val is None:
                         g_mode_val = "Unknown"
                     group_modes_df = df.group_by(group_col).agg(pl.col(col).mode())
@@ -430,8 +493,15 @@ def plan(data: Any) -> RepairPlan:
                             if isinstance(val, pl.Series):
                                 val = val.item(0) if val.len() > 0 else g_mode_val
                             group_modes_map[r[0]] = val
-                    case_parts = [f"WHEN \"{group_col}\" = '{k}' THEN '{v}'" for k, v in group_modes_map.items()]
-                    sql_expr = f"COALESCE(\"{col}\", CASE {' '.join(case_parts)} ELSE '{g_mode_val}' END)" if case_parts else f"COALESCE(\"{col}\", '{g_mode_val}')"
+                    case_parts = [
+                        f"WHEN \"{group_col}\" = '{k}' THEN '{v}'"
+                        for k, v in group_modes_map.items()
+                    ]
+                    sql_expr = (
+                        f"COALESCE(\"{col}\", CASE {' '.join(case_parts)} ELSE '{g_mode_val}' END)"
+                        if case_parts
+                        else f"COALESCE(\"{col}\", '{g_mode_val}')"
+                    )
 
                     actions.append(
                         RepairAction(
@@ -440,14 +510,21 @@ def plan(data: Any) -> RepairPlan:
                             why_it_changed=f"Missingness is correlated with '{group_col}'. Group mode handles MAR data.",
                             confidence=0.8,
                             expected_score_bump=8,
-                            rule_fn=make_impute_group_mode_rule(col, group_col, global_mode_val=g_mode_val, group_modes=group_modes_map),
+                            rule_fn=make_impute_group_mode_rule(
+                                col,
+                                group_col,
+                                global_mode_val=g_mode_val,
+                                group_modes=group_modes_map,
+                            ),
                             column=col,
                             sql_expr=sql_expr,
                         )
                     )
                     points_recovered += 8.0
                     column_diagnostics[col]["algorithm_chosen"] = "Group-by Mode"
-                    column_diagnostics[col]["reason"] = f"Imputed nulls using Group Mode grouped by correlated column '{group_col}'."
+                    column_diagnostics[col]["reason"] = (
+                        f"Imputed nulls using Group Mode grouped by correlated column '{group_col}'."
+                    )
                 except Exception:
                     strategy = "impute_mode"
 
@@ -463,12 +540,14 @@ def plan(data: Any) -> RepairPlan:
                         expected_score_bump=10,
                         rule_fn=make_impute_median_rule(col, value=val_f),
                         column=col,
-                        sql_expr=f"COALESCE(\"{col}\", {val_f})",
+                        sql_expr=f'COALESCE("{col}", {val_f})',
                     )
                 )
                 points_recovered += 10.0
                 column_diagnostics[col]["algorithm_chosen"] = "Median Imputation"
-                column_diagnostics[col]["reason"] = "Imputed using overall column Median (skewed distribution)."
+                column_diagnostics[col]["reason"] = (
+                    "Imputed using overall column Median (skewed distribution)."
+                )
             elif strategy == "impute_mean":
                 val = df.select(pl.col(col).mean()).item()
                 val_f = float(val) if val is not None else 0.0
@@ -481,18 +560,24 @@ def plan(data: Any) -> RepairPlan:
                         expected_score_bump=10,
                         rule_fn=make_impute_mean_rule(col, value=val_f),
                         column=col,
-                        sql_expr=f"COALESCE(\"{col}\", {val_f})",
+                        sql_expr=f'COALESCE("{col}", {val_f})',
                     )
                 )
                 points_recovered += 10.0
                 column_diagnostics[col]["algorithm_chosen"] = "Mean Imputation"
-                column_diagnostics[col]["reason"] = "Imputed using overall column Mean (normal distribution)."
+                column_diagnostics[col]["reason"] = (
+                    "Imputed using overall column Mean (normal distribution)."
+                )
             elif strategy == "impute_mode":
                 mode_series = df.select(pl.col(col).mode())
                 val = mode_series.item(0, 0) if mode_series.height > 0 else "Unknown"
                 if val is None:
                     val = "Unknown"
-                sql_expr = f"COALESCE(\"{col}\", '{val}')" if isinstance(val, str) else f"COALESCE(\"{col}\", {val})"
+                sql_expr = (
+                    f"COALESCE(\"{col}\", '{val}')"
+                    if isinstance(val, str)
+                    else f'COALESCE("{col}", {val})'
+                )
                 actions.append(
                     RepairAction(
                         category="Missing Values",
@@ -518,12 +603,14 @@ def plan(data: Any) -> RepairPlan:
                         expected_score_bump=10,
                         rule_fn=make_impute_ffill_rule(col),
                         column=col,
-                        sql_expr=f"COALESCE(\"{col}\", LAG(\"{col}\") IGNORE NULLS OVER ())",
+                        sql_expr=f'COALESCE("{col}", LAG("{col}") IGNORE NULLS OVER ())',
                     )
                 )
                 points_recovered += 10.0
                 column_diagnostics[col]["algorithm_chosen"] = "Forward Fill"
-                column_diagnostics[col]["reason"] = "Time-series/sequential columns forward filled."
+                column_diagnostics[col]["reason"] = (
+                    "Time-series/sequential columns forward filled."
+                )
             elif strategy == "impute_constant":
                 fill_val = params.get("value", "Unknown")
                 actions.append(
@@ -540,7 +627,9 @@ def plan(data: Any) -> RepairPlan:
                 )
                 points_recovered += 5.0
                 column_diagnostics[col]["algorithm_chosen"] = "Constant Imputation"
-                column_diagnostics[col]["reason"] = f"Imputed with constant '{fill_val}'."
+                column_diagnostics[col]["reason"] = (
+                    f"Imputed with constant '{fill_val}'."
+                )
 
         # Outliers clipping (if numerical and no nulls)
         if dtype.is_numeric() and null_count == 0:
@@ -549,10 +638,16 @@ def plan(data: Any) -> RepairPlan:
             is_skewed = abs(skew_val) > 1.0
 
             outlier_strat, outlier_params = decision_engine.select_outlier_strategy(
-                column_name=col, row_count=df.height, is_normal_dist=not is_skewed, skewness=skew_val, kurtosis=kurt_val
+                column_name=col,
+                row_count=df.height,
+                is_normal_dist=not is_skewed,
+                skewness=skew_val,
+                kurtosis=kurt_val,
             )
 
-            column_diagnostics[col]["algorithms_considered"].extend(["IQR Clipping", "Z-Score Clipping", "Modified Z-Score Clipping"])
+            column_diagnostics[col]["algorithms_considered"].extend(
+                ["IQR Clipping", "Z-Score Clipping", "Modified Z-Score Clipping"]
+            )
 
             if outlier_strat == "iqr":
                 q1 = df.select(pl.col(col).quantile(0.25)).item()
@@ -572,14 +667,21 @@ def plan(data: Any) -> RepairPlan:
                         why_it_changed="IQR-based clipping prevents extreme anomalies from skewing downstream training.",
                         confidence=0.9,
                         expected_score_bump=5,
-                        rule_fn=make_outlier_iqr_rule(col, threshold=threshold, lower_bound=lower, upper_bound=upper),
+                        rule_fn=make_outlier_iqr_rule(
+                            col,
+                            threshold=threshold,
+                            lower_bound=lower,
+                            upper_bound=upper,
+                        ),
                         column=col,
-                        sql_expr=f"CASE WHEN \"{col}\" < {lower} THEN {lower} WHEN \"{col}\" > {upper} THEN {upper} ELSE \"{col}\" END",
+                        sql_expr=f'CASE WHEN "{col}" < {lower} THEN {lower} WHEN "{col}" > {upper} THEN {upper} ELSE "{col}" END',
                     )
                 )
                 points_recovered += 5.0
                 column_diagnostics[col]["algorithm_chosen"] = "IQR Clipping"
-                column_diagnostics[col]["reason"] = "Extreme heavy-tailed distribution, outliers clipped using IQR."
+                column_diagnostics[col]["reason"] = (
+                    "Extreme heavy-tailed distribution, outliers clipped using IQR."
+                )
             elif outlier_strat == "z_score":
                 mean_v = df.select(pl.col(col).mean()).item()
                 std_v = df.select(pl.col(col).std()).item()
@@ -597,14 +699,18 @@ def plan(data: Any) -> RepairPlan:
                         why_it_changed="Z-score clipping removes values beyond normal distribution threshold (3.0 std devs).",
                         confidence=0.9,
                         expected_score_bump=5,
-                        rule_fn=make_outlier_zscore_rule(col, threshold=threshold, mean_val=mean_v, std_val=std_v),
+                        rule_fn=make_outlier_zscore_rule(
+                            col, threshold=threshold, mean_val=mean_v, std_val=std_v
+                        ),
                         column=col,
-                        sql_expr=f"CASE WHEN \"{col}\" < {lower} THEN {lower} WHEN \"{col}\" > {upper} THEN {upper} ELSE \"{col}\" END",
+                        sql_expr=f'CASE WHEN "{col}" < {lower} THEN {lower} WHEN "{col}" > {upper} THEN {upper} ELSE "{col}" END',
                     )
                 )
                 points_recovered += 5.0
                 column_diagnostics[col]["algorithm_chosen"] = "Z-Score Clipping"
-                column_diagnostics[col]["reason"] = "Normally distributed column, Z-score clipping applied."
+                column_diagnostics[col]["reason"] = (
+                    "Normally distributed column, Z-score clipping applied."
+                )
             elif outlier_strat == "modified_zscore":
                 median_v = df.select(pl.col(col).median()).item()
                 threshold = outlier_params.get("threshold", 3.5)
@@ -625,14 +731,18 @@ def plan(data: Any) -> RepairPlan:
                         why_it_changed="Modified Z-score using Median Absolute Deviation (MAD) is robust for skewed distributions.",
                         confidence=0.9,
                         expected_score_bump=6,
-                        rule_fn=make_outlier_modified_zscore_rule(col, threshold=threshold, median_val=median_v, mad_val=mad_v),
+                        rule_fn=make_outlier_modified_zscore_rule(
+                            col, threshold=threshold, median_val=median_v, mad_val=mad_v
+                        ),
                         column=col,
-                        sql_expr=f"CASE WHEN \"{col}\" < {lower} THEN {lower} WHEN \"{col}\" > {upper} THEN {upper} ELSE \"{col}\" END",
+                        sql_expr=f'CASE WHEN "{col}" < {lower} THEN {lower} WHEN "{col}" > {upper} THEN {upper} ELSE "{col}" END',
                     )
                 )
                 points_recovered += 6.0
                 column_diagnostics[col]["algorithm_chosen"] = "MAD Modified Z-Score"
-                column_diagnostics[col]["reason"] = "Slightly skewed distribution, clipped using MAD-based Modified Z-Score."
+                column_diagnostics[col]["reason"] = (
+                    "Slightly skewed distribution, clipped using MAD-based Modified Z-Score."
+                )
 
         # Memory optimizations
         if dtype == pl.String:
@@ -647,12 +757,14 @@ def plan(data: Any) -> RepairPlan:
                         expected_score_bump=5,
                         rule_fn=make_categorical_rule(col),
                         column=col,
-                        sql_expr=f"CAST(\"{col}\" AS VARCHAR)",
+                        sql_expr=f'CAST("{col}" AS VARCHAR)',
                     )
                 )
                 points_recovered += 5.0
                 column_diagnostics[col]["algorithm_chosen"] = "Cast to Categorical"
-                column_diagnostics[col]["reason"] = "String column converted to Categorical (cardinality ratio < 5%)."
+                column_diagnostics[col]["reason"] = (
+                    "String column converted to Categorical (cardinality ratio < 5%)."
+                )
         elif dtype.is_integer():
             c_min, c_max = df[col].min(), df[col].max()
             if isinstance(c_min, (int, float)) and isinstance(c_max, (int, float)):
@@ -666,12 +778,14 @@ def plan(data: Any) -> RepairPlan:
                             expected_score_bump=2,
                             rule_fn=make_downcast_rule(col, pl.Int8),
                             column=col,
-                            sql_expr=f"CAST(\"{col}\" AS TINYINT)",
+                            sql_expr=f'CAST("{col}" AS TINYINT)',
                         )
                     )
                     points_recovered += 2.0
                     column_diagnostics[col]["algorithm_chosen"] = "Downcast to Int8"
-                    column_diagnostics[col]["reason"] = "Integer column downcasted to Int8."
+                    column_diagnostics[col]["reason"] = (
+                        "Integer column downcasted to Int8."
+                    )
                 elif (
                     c_min >= -32768
                     and c_max <= 32767
@@ -686,12 +800,14 @@ def plan(data: Any) -> RepairPlan:
                             expected_score_bump=2,
                             rule_fn=make_downcast_rule(col, pl.Int16),
                             column=col,
-                            sql_expr=f"CAST(\"{col}\" AS SMALLINT)",
+                            sql_expr=f'CAST("{col}" AS SMALLINT)',
                         )
                     )
                     points_recovered += 2.0
                     column_diagnostics[col]["algorithm_chosen"] = "Downcast to Int16"
-                    column_diagnostics[col]["reason"] = "Integer column downcasted to Int16."
+                    column_diagnostics[col]["reason"] = (
+                        "Integer column downcasted to Int16."
+                    )
 
     # Row-level Deduplication is run at the very end
     try:
@@ -720,10 +836,13 @@ def plan(data: Any) -> RepairPlan:
         for action in actions:
             if getattr(action, "column", "") == col:
                 column_diagnostics[col]["quality_score_after"] = min(
-                    100.0, column_diagnostics[col]["quality_score_before"] + action.expected_score_bump
+                    100.0,
+                    column_diagnostics[col]["quality_score_before"]
+                    + action.expected_score_bump,
                 )
         column_diagnostics[col]["repair_score"] = (
-            column_diagnostics[col]["quality_score_after"] - column_diagnostics[col]["quality_score_before"]
+            column_diagnostics[col]["quality_score_after"]
+            - column_diagnostics[col]["quality_score_before"]
         )
 
     # Attach diagnostics to metadata for downstream HTML rendering

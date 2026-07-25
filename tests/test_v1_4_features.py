@@ -14,10 +14,12 @@ from tidely.core.streaming import StreamingEngine
 
 def test_profiler_extended_metrics() -> None:
     """Verifies that the DetectionEngine calculates density, memory, and cost correctly."""
-    df = pl.DataFrame({
-        "a": [1, 2, None, 4],
-        "b": ["x", "y", "z", "w"],
-    })
+    df = pl.DataFrame(
+        {
+            "a": [1, 2, None, 4],
+            "b": ["x", "y", "z", "w"],
+        }
+    )
     detector = DetectionEngine()
     meta = detector.analyze(df)
 
@@ -58,6 +60,7 @@ def test_decision_engine_routing() -> None:
 
 def test_sql_compilation() -> None:
     """Verifies translation of functional rules into SQL statements."""
+
     def dummy_rule(df: pl.DataFrame) -> pl.DataFrame:
         return df
 
@@ -70,7 +73,7 @@ def test_sql_compilation() -> None:
         expected_score_bump=10,
         rule_fn=dummy_rule,
         column="col1",
-        sql_expr="COALESCE(\"col1\", 1.0)",
+        sql_expr='COALESCE("col1", 1.0)',
     )
 
     action2 = RepairAction(
@@ -81,7 +84,7 @@ def test_sql_compilation() -> None:
         expected_score_bump=5,
         rule_fn=dummy_rule,
         column="col2",
-        sql_expr="CASE WHEN \"col2\" < 0 THEN 0 WHEN \"col2\" > 100 THEN 100 ELSE \"col2\" END",
+        sql_expr='CASE WHEN "col2" < 0 THEN 0 WHEN "col2" > 100 THEN 100 ELSE "col2" END',
     )
 
     plan_obj = RepairPlan(
@@ -94,19 +97,24 @@ def test_sql_compilation() -> None:
     sql = plan_obj.compile_to_sql("my_table", ["col1", "col2", "col3"])
 
     assert "WITH" in sql
-    assert "raw_source AS (SELECT \"col1\" AS \"col1\", \"col2\" AS \"col2\", \"col3\" AS \"col3\" FROM \"my_table\")" in sql
-    assert "COALESCE(\"col1\", 1.0) AS \"col1\"" in sql
-    assert "CASE WHEN \"col2\" < 0" in sql
+    assert (
+        'raw_source AS (SELECT "col1" AS "col1", "col2" AS "col2", "col3" AS "col3" FROM "my_table")'
+        in sql
+    )
+    assert 'COALESCE("col1", 1.0) AS "col1"' in sql
+    assert 'CASE WHEN "col2" < 0' in sql
     assert "FROM step_2" in sql
 
 
 def test_duckdb_execution() -> None:
     """Verifies DuckDB execution of the compiled plan on in-memory data."""
-    df = pl.DataFrame({
-        "col1": [1.0, None, 3.0],
-        "col2": [-10, 50, 150],
-        "col3": ["a", "b", "c"],
-    })
+    df = pl.DataFrame(
+        {
+            "col1": [1.0, None, 3.0],
+            "col2": [-10, 50, 150],
+            "col3": ["a", "b", "c"],
+        }
+    )
 
     def dummy_rule(df: pl.DataFrame) -> pl.DataFrame:
         return df
@@ -119,7 +127,7 @@ def test_duckdb_execution() -> None:
         expected_score_bump=10,
         rule_fn=dummy_rule,
         column="col1",
-        sql_expr="COALESCE(\"col1\", 2.0)",
+        sql_expr='COALESCE("col1", 2.0)',
     )
 
     action2 = RepairAction(
@@ -130,7 +138,7 @@ def test_duckdb_execution() -> None:
         expected_score_bump=5,
         rule_fn=dummy_rule,
         column="col2",
-        sql_expr="CASE WHEN \"col2\" < 0 THEN 0 WHEN \"col2\" > 100 THEN 100 ELSE \"col2\" END",
+        sql_expr='CASE WHEN "col2" < 0 THEN 0 WHEN "col2" > 100 THEN 100 ELSE "col2" END',
     )
 
     plan_obj = RepairPlan(
@@ -154,10 +162,12 @@ def test_chunked_streaming() -> None:
     # Write a dirty file
     with tempfile.TemporaryDirectory() as tmpdir:
         csv_path = os.path.join(tmpdir, "test.csv")
-        df = pl.DataFrame({
-            "col1": [1.0, None, 3.0, None, 5.0],
-            "col2": ["foo", "bar", "foo", "baz", "foo"],
-        })
+        df = pl.DataFrame(
+            {
+                "col1": [1.0, None, 3.0, None, 5.0],
+                "col2": ["foo", "bar", "foo", "baz", "foo"],
+            }
+        )
         df.write_csv(csv_path)
 
         # Impute missing values with median (3.0)
@@ -169,7 +179,7 @@ def test_chunked_streaming() -> None:
             expected_score_bump=10,
             rule_fn=make_impute_median_rule("col1", value=3.0),
             column="col1",
-            sql_expr="COALESCE(\"col1\", 3.0)",
+            sql_expr='COALESCE("col1", 3.0)',
         )
 
         plan_obj = RepairPlan(

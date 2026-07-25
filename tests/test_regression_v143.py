@@ -1,6 +1,6 @@
-"""Regression tests for Tidely v1.4.2 release.
+"""Regression tests for Tidely v1.4.3 release.
 
-These tests guard against every bug fixed in v1.4.2 and verify
+These tests guard against every bug fixed in v1.4.3 and verify
 core advertised functionality.
 """
 
@@ -16,6 +16,7 @@ from tidely.result import CleanResult
 # ---------------------------------------------------------------------------
 # 1. File-path API tests
 # ---------------------------------------------------------------------------
+
 
 def test_clean_csv_from_path(tmp_path):
     """td.clean() accepts a CSV file path string and returns a CleanResult."""
@@ -75,6 +76,7 @@ def test_clean_arff_from_path(tmp_path):
 # 2. CleanResult structure tests
 # ---------------------------------------------------------------------------
 
+
 def test_cleanresult_df_attribute():
     """CleanResult.df returns a DataFrame (Polars or Pandas)."""
     df = pd.DataFrame({"a": [1, 2, 3]})
@@ -133,6 +135,7 @@ def test_cleanresult_export_html(tmp_path):
 # 3. Excel loading (requires openpyxl/fastexcel)
 # ---------------------------------------------------------------------------
 
+
 def test_clean_excel_from_path(tmp_path):
     """td.clean() can load and clean an Excel file."""
     xlsx_path = tmp_path / "data.xlsx"
@@ -146,6 +149,7 @@ def test_clean_excel_from_path(tmp_path):
 # ---------------------------------------------------------------------------
 # 4. DuckDB routing
 # ---------------------------------------------------------------------------
+
 
 def test_decision_engine_routes_correctly():
     """DecisionEngine routes datasets to correct backends."""
@@ -166,6 +170,7 @@ def test_decision_engine_routes_correctly():
 # ---------------------------------------------------------------------------
 # 5. Empty / edge-case DataFrames
 # ---------------------------------------------------------------------------
+
 
 def test_clean_empty_dataframe():
     """td.clean() handles an empty DataFrame without crashing."""
@@ -195,14 +200,16 @@ def test_clean_all_nulls():
 # 6. Version consistency
 # ---------------------------------------------------------------------------
 
-def test_version_is_1_4_2():
-    """__version__ matches the expected release version."""
-    assert td.__version__ == "1.4.2"
+
+def test_version_is_1_4_3():
+    """__version__ matches the current release version."""
+    assert td.__version__ == "1.5.0"
 
 
 def test_version_matches_pyproject():
     """__version__ matches the version in pyproject.toml."""
     import tomllib
+
     pyproject_path = Path(__file__).parents[1] / "pyproject.toml"
     if not pyproject_path.is_file():
         pytest.skip("pyproject.toml not found")
@@ -214,6 +221,7 @@ def test_version_matches_pyproject():
 # ---------------------------------------------------------------------------
 # 7. Duplicate column names
 # ---------------------------------------------------------------------------
+
 
 def test_clean_duplicate_columns():
     """td.clean() handles DataFrames with duplicate column names."""
@@ -228,6 +236,7 @@ def test_clean_duplicate_columns():
 # 8. Polars input
 # ---------------------------------------------------------------------------
 
+
 def test_clean_polars_dataframe():
     """td.clean() accepts a Polars DataFrame directly."""
     df = pl.DataFrame({"x": [1, 2, 3], "y": ["a", "b", "c"]})
@@ -240,13 +249,16 @@ def test_clean_polars_dataframe():
 # 9. Extended Exporter and Loader E2E tests
 # ---------------------------------------------------------------------------
 
+
 def test_clean_result_extended_metadata(tmp_path):
     """Exposes all new CleanResult properties and formats them in the summary."""
-    df = pl.DataFrame({
-        "customer_id": ["C001", "C002", "C001"],
-        "name": ["Alice", "Bob", "Alice"],
-        "subscription_date": ["2026-06-30", "2026-07-01", "2026-06-30"]
-    })
+    df = pl.DataFrame(
+        {
+            "customer_id": ["C001", "C002", "C001"],
+            "name": ["Alice", "Bob", "Alice"],
+            "subscription_date": ["2026-06-30", "2026-07-01", "2026-06-30"],
+        }
+    )
     result = td.clean(df)
     assert isinstance(result.health_before, int)
     assert isinstance(result.health_after, int)
@@ -258,7 +270,7 @@ def test_clean_result_extended_metadata(tmp_path):
     assert isinstance(result.rows_removed, int)
     assert isinstance(result.columns_modified, int)
     assert isinstance(result.actions, list)
-    assert result.version == "1.4.2"
+    assert result.version == "1.5.0"
 
     summary = result.summary()
     assert "TIDELY CLEANING SUMMARY" in summary
@@ -346,12 +358,14 @@ def test_universal_loader_and_intelligent_features(tmp_path):
 
 def test_semantic_intelligence_correctness():
     """Classifier correctly maps first_name/last_name to Name, dates to Date, and other business items."""
-    df = pl.DataFrame({
-        "first_name": ["Alice", "Bob", "Charlie"],
-        "subscription_date": ["2026-06-30", "2026-07-01", "2026-06-25"],
-        "vin_code": ["1HGCR2F83HA000000", "1HGCR2F83HA111111", "1HGCR2F83HA222222"],
-        "customer_id": ["C1001", "C1002", "C1003"]
-    })
+    df = pl.DataFrame(
+        {
+            "first_name": ["Alice", "Bob", "Charlie"],
+            "subscription_date": ["2026-06-30", "2026-07-01", "2026-06-25"],
+            "vin_code": ["1HGCR2F83HA000000", "1HGCR2F83HA111111", "1HGCR2F83HA222222"],
+            "customer_id": ["C1001", "C1002", "C1003"],
+        }
+    )
     # profile semantic types
     profile = td.inspect(df)
     sem = profile.semantic_types

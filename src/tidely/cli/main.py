@@ -20,6 +20,7 @@ def version_callback(value: bool) -> None:
     """Callback to print the version of Tidely."""
     if value:
         import tidely as td
+
         typer.echo(f"Tidely version: {td.__version__}")
         raise typer.Exit()
 

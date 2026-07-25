@@ -36,11 +36,13 @@ def clean(
     """
     # Auto-load file paths using the existing adapter without duplicating loader logic
     from pathlib import Path
+
     if isinstance(data, (str, Path)):
         # Normalize to a string path for the adapter
         data = str(data)
         # Use the load helper to read the file into a Polars/Pandas DataFrame
         from tidely.api import load
+
         data = load(data)
     return run_pipeline(data)
 
@@ -125,9 +127,10 @@ def load(filepath: str, **kwargs: Any) -> Any:
     """
     # Delegate to the adapter which knows how to handle many formats
     from tidely.core.adapter import normalize_to_polars
+
     pl_obj, fmt = normalize_to_polars(filepath)
     # Convert Polars object to appropriate Python object (DataFrame or LazyFrame)
-    if fmt.endswith('_lazy'):
+    if fmt.endswith("_lazy"):
         # Return LazyFrame for lazy formats
         return pl_obj
     else:
@@ -195,7 +198,9 @@ def save(data: Any, filepath: str, **kwargs: Any) -> None:
                 pd_df = data.to_pandas() if hasattr(data, "to_pandas") else data
                 pd_df.to_excel(filepath, index=False, **kwargs)
             else:
-                raise TidelyDataError("Pandas is required to export to Excel (.xls/.xlsx)")
+                raise TidelyDataError(
+                    "Pandas is required to export to Excel (.xls/.xlsx)"
+                )
         elif ext == "ods":
             if pd is not None:
                 pd_df = data.to_pandas() if hasattr(data, "to_pandas") else data
@@ -238,6 +243,7 @@ def save(data: Any, filepath: str, **kwargs: Any) -> None:
                 raise TidelyDataError("Pandas is required to export to XML")
         elif ext in ("yaml", "yml"):
             import yaml
+
             if hasattr(data, "to_dicts"):
                 dicts = data.to_dicts()
             elif hasattr(data, "to_dict"):
@@ -248,6 +254,7 @@ def save(data: Any, filepath: str, **kwargs: Any) -> None:
                 yaml.dump(dicts, f, default_flow_style=False, **kwargs)
         elif ext == "arff":
             import os
+
             df_pl = data if hasattr(data, "iter_rows") else pl.from_pandas(data)
             lines = [f"@relation {os.path.basename(filepath)}"]
             for col in df_pl.columns:
@@ -257,8 +264,12 @@ def save(data: Any, filepath: str, **kwargs: Any) -> None:
                 elif dtype == pl.Boolean:
                     lines.append(f"@attribute {col} {{false,true}}")
                 else:
-                    unique_vals = [str(x) for x in df_pl[col].unique().drop_nulls().to_list()]
-                    unique_escaped = [f"'{x}'" if " " in x or "," in x else x for x in unique_vals]
+                    unique_vals = [
+                        str(x) for x in df_pl[col].unique().drop_nulls().to_list()
+                    ]
+                    unique_escaped = [
+                        f"'{x}'" if " " in x or "," in x else x for x in unique_vals
+                    ]
                     if not unique_escaped:
                         unique_escaped = ["?"]
                     lines.append(f"@attribute {col} {{{','.join(unique_escaped)}}}")
@@ -291,15 +302,19 @@ def save(data: Any, filepath: str, **kwargs: Any) -> None:
                 raise TidelyDataError("Unsupported TXT data object.")
         elif ext == "duckdb":
             import duckdb
+
             df_pl = data if hasattr(data, "lazy") else pl.from_pandas(data)
             conn = duckdb.connect(filepath)
             try:
                 conn.register("temp_df", df_pl)
-                conn.execute("CREATE TABLE IF NOT EXISTS cleaned_data AS SELECT * FROM temp_df")
+                conn.execute(
+                    "CREATE TABLE IF NOT EXISTS cleaned_data AS SELECT * FROM temp_df"
+                )
             finally:
                 conn.close()
         elif ext in ("sqlite", "db"):
             import sqlite3
+
             df_pl = data if hasattr(data, "iter_rows") else pl.from_pandas(data)
             sqlite_conn = sqlite3.connect(filepath)
             try:
@@ -309,9 +324,14 @@ def save(data: Any, filepath: str, **kwargs: Any) -> None:
                     dtype = df_pl[col].dtype
                     sql_type = "REAL" if dtype.is_numeric() else "TEXT"
                     cols.append(f'"{col}" {sql_type}')
-                cursor.execute(f"CREATE TABLE IF NOT EXISTS cleaned_data ({', '.join(cols)});")
+                cursor.execute(
+                    f"CREATE TABLE IF NOT EXISTS cleaned_data ({', '.join(cols)});"
+                )
                 placeholders = ", ".join(["?"] * len(df_pl.columns))
-                cursor.executemany(f"INSERT INTO cleaned_data VALUES ({placeholders})", df_pl.iter_rows())
+                cursor.executemany(
+                    f"INSERT INTO cleaned_data VALUES ({placeholders})",
+                    df_pl.iter_rows(),
+                )
                 sqlite_conn.commit()
             finally:
                 sqlite_conn.close()

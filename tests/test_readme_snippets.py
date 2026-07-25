@@ -25,18 +25,22 @@ def exec_snippet(code: str, globals_dict=None):
 def test_readme_snippets():
     # Set up dummy files in the current working directory so the snippets can run successfully
     dummy_files = {
-        "dirty_data.csv": pd.DataFrame({
-            "Department": ["HR", "Engineering", "HR"],
-            "Salary": [50000.0, 80000.0, np.nan],
-            "Zip": ["123.0", "94043.0", "90210"],
-            "Email": ["ALICE@GMAIL.COM", "bob@yahoo.com", "charlie"],
-            "Latitude": [37.7749, -122.4194, "invalid"]
-        }),
-        "data.csv": pd.DataFrame({
-            "id": [1, 2, 3],
-            "name": ["Alice", "Bob", "Charlie"],
-            "email": ["alice@gmail.com", "bob@yahoo.com", "charlie@gmail.com"]
-        })
+        "dirty_data.csv": pd.DataFrame(
+            {
+                "Department": ["HR", "Engineering", "HR"],
+                "Salary": [50000.0, 80000.0, np.nan],
+                "Zip": ["123.0", "94043.0", "90210"],
+                "Email": ["ALICE@GMAIL.COM", "bob@yahoo.com", "charlie"],
+                "Latitude": [37.7749, -122.4194, "invalid"],
+            }
+        ),
+        "data.csv": pd.DataFrame(
+            {
+                "id": [1, 2, 3],
+                "name": ["Alice", "Bob", "Charlie"],
+                "email": ["alice@gmail.com", "bob@yahoo.com", "charlie@gmail.com"],
+            }
+        ),
     }
 
     # Write dummy files
@@ -52,11 +56,13 @@ def test_readme_snippets():
             # We don't skip anything now because the dummy files are present!
             err = exec_snippet(code)
             if err:
-                failures.append({
-                    "heading": heading,
-                    "error": repr(err),
-                    "traceback": traceback.format_exc()
-                })
+                failures.append(
+                    {
+                        "heading": heading,
+                        "error": repr(err),
+                        "traceback": traceback.format_exc(),
+                    }
+                )
     finally:
         # Clean up any created files
         files_to_remove = [
@@ -64,7 +70,7 @@ def test_readme_snippets():
             "data.csv",
             "clean_data.csv",
             "clean.csv",
-            "report.html"
+            "report.html",
         ]
         for name in files_to_remove:
             if os.path.exists(name):
@@ -74,5 +80,7 @@ def test_readme_snippets():
                     pass
 
     if failures:
-        print(json.dumps({"readme_snippet_failures": failures}, indent=2), file=sys.stderr)
+        print(
+            json.dumps({"readme_snippet_failures": failures}, indent=2), file=sys.stderr
+        )
     assert not failures, f"{len(failures)} README snippets failed"

@@ -1,245 +1,53 @@
-[
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\311_ServiceRequest_2020-present_DataDictionary_Updated_2025.xlsx",
-    "size_bytes": 424095,
-    "exception": null,
-    "warnings": [],
-    "execution_time_sec": 0.1737553000002663,
-    "peak_memory_kb": 2632,
-    "row_count_before": 13,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Allegations-of-Harassment-or-Bullying.xlsx",
-    "size_bytes": 19284,
-    "exception": null,
-    "warnings": [
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)"
-    ],
-    "execution_time_sec": 0.17152579999947193,
-    "peak_memory_kb": 269,
-    "row_count_before": 57,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Classes-in-Mathematics-and-Science.xlsx",
-    "size_bytes": 23989,
-    "exception": null,
-    "warnings": [
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)"
-    ],
-    "execution_time_sec": 0.31407860000035726,
-    "peak_memory_kb": 559,
-    "row_count_before": 59,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\credits.csv",
-    "size_bytes": 3816592,
-    "exception": null,
-    "warnings": [],
-    "execution_time_sec": 4.745750400000361,
-    "peak_memory_kb": 5860,
-    "row_count_before": 77801,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Crunchy Corner Actual - Unclean Data.xlsx",
-    "size_bytes": 158792300,
-    "exception": null,
-    "warnings": [
-      "invalid value encountered in divide",
-      "invalid value encountered in divide"
-    ],
-    "execution_time_sec": 29.727470099999664,
-    "peak_memory_kb": 29541,
-    "row_count_before": 461091,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Crunchy Corner Budget-Unclean Data.xlsx",
-    "size_bytes": 10522925,
-    "exception": null,
-    "warnings": [
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)"
-    ],
-    "execution_time_sec": 15.91728570000032,
-    "peak_memory_kb": 40710,
-    "row_count_before": 46981,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\customers-2000000.csv",
-    "size_bytes": 349423206,
-    "exception": null,
-    "warnings": [],
-    "execution_time_sec": 37.57027610000023,
-    "peak_memory_kb": 14673,
-    "row_count_before": 1998692,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\dataset_31_credit-g.arff",
-    "size_bytes": 162291,
-    "exception": null,
-    "warnings": [],
-    "execution_time_sec": 2.9822264000003997,
-    "peak_memory_kb": 2221,
-    "row_count_before": 1000,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\dataset_37_diabetes.arff",
-    "size_bytes": 37419,
-    "exception": null,
-    "warnings": [],
-    "execution_time_sec": 0.459350799999811,
-    "peak_memory_kb": 590,
-    "row_count_before": 768,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\dataset_61_iris.arff",
-    "size_bytes": 7487,
-    "exception": null,
-    "warnings": [],
-    "execution_time_sec": 0.10455569999976433,
-    "peak_memory_kb": 149,
-    "row_count_before": 147,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Enrollment-in-Advanced-Mathematics.xlsx",
-    "size_bytes": 46887,
-    "exception": null,
-    "warnings": [
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)"
-    ],
-    "execution_time_sec": 0.5991129000003639,
-    "peak_memory_kb": 563,
-    "row_count_before": 59,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Parking_Meters_-_Citywide_Rate_Zones_20260630.csv",
-    "size_bytes": 2524601,
-    "exception": null,
-    "warnings": [],
-    "execution_time_sec": 0.16231260000040493,
-    "peak_memory_kb": 6940,
-    "row_count_before": 52,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\research-questions-ai-10000.csv",
-    "size_bytes": 1337226,
-    "exception": null,
-    "warnings": [],
-    "execution_time_sec": 6.437348899999961,
-    "peak_memory_kb": 8288,
-    "row_count_before": 10000,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\titles.csv",
-    "size_bytes": 2028486,
-    "exception": null,
-    "warnings": [
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)",
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)"
-    ],
-    "execution_time_sec": 7.868202600000586,
-    "peak_memory_kb": 11942,
-    "row_count_before": 5850,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\Uncleaned-data.txt",
-    "size_bytes": 60824000,
-    "exception": null,
-    "warnings": [
-      "the `default` parameter for `replace` is deprecated. Use `replace_strict` instead to set a default while replacing values.\n(Deprecated in version 1.0.0)"
-    ],
-    "execution_time_sec": 10.808479199999965,
-    "peak_memory_kb": 110470,
-    "row_count_before": 343005,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\y_amazon-google-large.csv",
-    "size_bytes": 115412276,
-    "exception": null,
-    "warnings": [],
-    "execution_time_sec": 4.459005400000024,
-    "peak_memory_kb": 3304,
-    "row_count_before": 3055000,
-    "row_count_after": null
-  },
-  {
-    "file": "C:\\Users\\Aaryan Rawat\\Downloads\\data\\y_amazon-google-large.csv.cleaned.csv",
-    "size_bytes": 129239973,
-    "exception": null,
-    "warnings": [],
-    "execution_time_sec": 3.2536715000005643,
-    "peak_memory_kb": 3306,
-    "row_count_before": 297808,
-    "row_count_after": null
-  }
-]
+{
+  "tidely_version": "1.5.0",
+  "generated_at": "2026-07-25 07:42 UTC",
+  "regression_threshold": 2.0,
+  "results": [
+    {
+      "id": 1,
+      "dataset": "anisoleai/fineweb-tokenized",
+      "status": "OK",
+      "rows": 200,
+      "cols": 1,
+      "traditional_time_ms": 4.41,
+      "tidely_time_ms": 19.67,
+      "peak_ram_mb": 8.95,
+      "validation_passed": true,
+      "validation": {
+        "checks": {
+          "row_count": true,
+          "column_count": true,
+          "null_reduction": true,
+          "duplicate_removal": true,
+          "dtype_numeric_token_ids": true,
+          "numeric_mean_token_ids": true,
+          "not_all_null_token_ids": true
+        },
+        "mismatches": []
+      },
+      "error": ""
+    },
+    {
+      "id": 2,
+      "dataset": "huggingface/documentation-images",
+      "status": "OK",
+      "rows": 28,
+      "cols": 1,
+      "traditional_time_ms": 24.56,
+      "tidely_time_ms": 24.49,
+      "peak_ram_mb": 2.5,
+      "validation_passed": true,
+      "validation": {
+        "checks": {
+          "row_count": true,
+          "column_count": true,
+          "null_reduction": true,
+          "duplicate_removal": true,
+          "not_all_null_image": true
+        },
+        "mismatches": []
+      },
+      "error": ""
+    }
+  ]
+}
