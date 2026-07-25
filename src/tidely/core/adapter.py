@@ -1,6 +1,6 @@
 """Adapters to normalize inputs (Pandas, Polars, Arrow) to Polars DataFrames/LazyFrames."""
 
-from typing import Any
+from typing import Any, cast
 
 import polars as pl
 
@@ -12,17 +12,15 @@ try:
 except ImportError:
     pd = None
 
-pa: Any = None
 try:
     import pyarrow as pa
 except ImportError:
-    pass
+    pa = cast(Any, None)
 
-duckdb: Any = None
 try:
     import duckdb
 except ImportError:
-    pass
+    duckdb = cast(Any, None)
 
 
 def estimate_dataset_size(data: Any) -> int:

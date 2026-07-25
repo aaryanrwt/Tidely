@@ -1,6 +1,6 @@
 # Tidely v1.5.0 — Benchmark Report
 
-_Generated: 2026-07-25 08:05 UTC_  
+_Generated: 2026-07-25 08:11 UTC_  
 _Methodology: Sequential processing. One dataset at a time. Memory freed after each run._
 
 ## Summary
@@ -16,8 +16,8 @@ _Methodology: Sequential processing. One dataset at a time. Memory freed after e
 
 | # | Dataset | Rows | Cols | Trad Time (ms) | Tidely Time (ms) | Speedup | Peak RAM (MB) | Throughput (rows/s) | Correctness |
 | :- | :--- | ---: | ---: | ---: | ---: | :---: | ---: | ---: | :---: |
-| 1 | anisoleai/fineweb-tokenized | 200 | 1 | 9.5 | 29.8 | **3.14x** ❌ | 9.3 | 6,722 | ✅ PASS |
-| 2 | huggingface/documentation-images | 28 | 1 | 17.3 | 12.9 | **0.74x** ✅ | 2.6 | 2,168 | ✅ PASS |
+| 1 | anisoleai/fineweb-tokenized | 200 | 1 | 4.8 | 17.4 | **3.59x** ❌ | 8.4 | 11,520 | ✅ PASS |
+| 2 | huggingface/documentation-images | 28 | 1 | 17.6 | 10.9 | **0.62x** ✅ | 2.6 | 2,559 | ✅ PASS |
 
 ## Validation Details
 
@@ -30,7 +30,7 @@ _Methodology: Sequential processing. One dataset at a time. Memory freed after e
 
 > **1 regression(s) detected** (Tidely >2.0x slower than traditional):
 
-- `anisoleai/fineweb-tokenized`: 3.14x slower (Tidely=29.8ms, Trad=9.5ms)
+- `anisoleai/fineweb-tokenized`: 3.59x slower (Tidely=17.4ms, Trad=4.8ms)
 
 ## Benchmark Methodology
 
@@ -54,4 +54,4 @@ _Methodology: Sequential processing. One dataset at a time. Memory freed after e
 | String ops | Polars `str.strip_chars`, `str.replace_all` (C-level) | Faster than Python-level loops |
 
 ---
-_Tidely v1.5.0 — 2026-07-25 08:05 UTC_
+_Tidely v1.5.0 — 2026-07-25 08:11 UTC_
