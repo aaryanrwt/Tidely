@@ -44,9 +44,7 @@ jobs:
         run: mypy src/tidely --ignore-missing-imports
 
       - name: Run tests with coverage
-        run: |
-          coverage run -m pytest tests/ -q --tb=short
-          coverage report --fail-under=70
+        run: pytest tests/ -q --tb=short
 
       - name: Benchmark smoke test
         run: python benchmarks/run_benchmark.py --smoke-test

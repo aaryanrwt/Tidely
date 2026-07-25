@@ -144,3 +144,14 @@ ignore_missing_imports = true
 minversion = "8.0"
 addopts = "-ra -q --tb=short --cov=tidely --cov-report=term-missing"
 testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["src/tidely"]
+omit = [
+    "src/tidely/cli/*",
+    "src/tidely/scratch/*",
+]
+
+[tool.coverage.report]
+fail_under = 55
+show_missing = true

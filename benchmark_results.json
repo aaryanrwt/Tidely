@@ -1,6 +1,6 @@
 {
   "tidely_version": "1.5.0",
-  "generated_at": "2026-07-25 08:11 UTC",
+  "generated_at": "2026-07-25 08:19 UTC",
   "regression_threshold": 2.0,
   "results": [
     {
@@ -9,9 +9,9 @@
       "status": "OK",
       "rows": 200,
       "cols": 1,
-      "traditional_time_ms": 4.83,
-      "tidely_time_ms": 17.36,
-      "peak_ram_mb": 8.36,
+      "traditional_time_ms": 14.44,
+      "tidely_time_ms": 49.0,
+      "peak_ram_mb": 9.62,
       "validation_passed": true,
       "validation": {
         "checks": {
@@ -33,9 +33,9 @@
       "status": "OK",
       "rows": 28,
       "cols": 1,
-      "traditional_time_ms": 17.56,
-      "tidely_time_ms": 10.94,
-      "peak_ram_mb": 2.56,
+      "traditional_time_ms": 22.27,
+      "tidely_time_ms": 11.71,
+      "peak_ram_mb": 3.23,
       "validation_passed": true,
       "validation": {
         "checks": {
